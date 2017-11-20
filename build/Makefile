@@ -18,13 +18,13 @@ BOOST_INSTALL_DIR = /home/anson/Software/boost/boost_1_61_0_build
 BOOST_CPPFLAGS = -pthread -I $(BOOST_INSTALL_DIR)/include/boost
 
 # Location of library directory after "make install"
-ROSE_LIB_DIR = /home/anson/Code/Github/rose_build_dir/lib
+ROSE_LIB_DIR = $(ROSE_INSTALL_DIR)/lib
 
 # Location of source code
-ROSE_SOURCE_DIR = /home/anson/Code/C/rose
+LE_SOURCE_DIR = /home/anson/Code/C++/le
 
 # Location of Loop Extraction include directory
-LE_INCLUDE_DIR = $(ROSE_SOURCE_DIR)/include
+LE_INCLUDE_DIR = $(LE_SOURCE_DIR)/include
 
 CXX         = g++
 CPPFLAGS    = -std=c++11 -g -Wall
@@ -47,7 +47,7 @@ $(executableFiles): $(objectFiles)
 	-I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) $(BOOST_CPPFLAGS) \
 	-o $@ $^ $(ROSE_LIBS)
 
-$(objectFiles): %.o:$(ROSE_SOURCE_DIR)/%.cpp
+$(objectFiles): %.o:$(LE_SOURCE_DIR)/%.cpp
 	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $^ -o $@
 
 .PHONY clean:
