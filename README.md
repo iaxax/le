@@ -91,10 +91,6 @@ vim ./showAST # set ROSE_HOME to root directory of rose
 ./cleanAST.sh
 ```
 
-* why need this
-```
-AST helps to understand structure of source code and 
-```
 
 ***
 
