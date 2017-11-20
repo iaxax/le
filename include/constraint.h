@@ -6,23 +6,29 @@
 
 namespace LE {
 
+  // constraint means that a condition must be met
+  // when you want to execute a path in program
+  // e.g if (i > 1) 'i > 1' is a condition
+  //
+  // ConstraintList represents a list of constraint
+  // that must all be met in a path
   class ConstraintList {
   private:
+    // list of constraints
     std::vector<SgExpression*> constraints;
 
   public:
+    // add a constraint
     inline void addConstraint(SgExpression* expr) {
       constraints.push_back(expr);
-    }
-
-    inline std::vector<SgExpression*> getConstraints() const {
-      return constraints;
     }
 
     ConstraintList() {}
     ConstraintList(const std::vector<SgExpression*>& c): constraints(c) {}
 
-    ConstraintList* clone() const;
+    // clone of a ConstraintList
+    // note: elements(SgExpression*) in constraints are copied shallowly
+    inline ConstraintList* clone() const {return new ConstraintList(constraints);}
 
     typedef std::vector<SgExpression*>::iterator iterator;
     typedef std::vector<SgExpression*>::const_iterator const_iterator;

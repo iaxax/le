@@ -36,7 +36,7 @@ executableFiles = le
 
 objectFiles = astHelper.o variable.o visitor.o \
 							loopNameAllocator.o loopExtraction.o \
-							constraint.o loop.o printer.o main.o
+							loop.o printer.o main.o
 
 # Default make rule to use
 all: $(executableFiles)

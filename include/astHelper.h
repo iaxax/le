@@ -7,6 +7,7 @@
 
 namespace LE {
 
+  // utility class for AST
   class ASTHelper {
   public:
     // deep clone of an AST
