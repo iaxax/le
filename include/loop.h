@@ -13,12 +13,14 @@ namespace LE {
 
   class LoopPath;
 
+  // a loop consists of a name, a set of varialbes
+  // and a set of paths
   class Loop {
   private:
     // name of loop (global unique)
     std::string name;
 
-    // variable involved in the loop
+    // variables involved in the loop
     std::set<std::string> variableInvolved;
 
     // paths of loop
@@ -42,20 +44,29 @@ namespace LE {
     inline const_iterator begin() const { return paths.begin(); }
     inline const_iterator end() const { return paths.end(); }
 
-    // eliminate paths that break the loop
+    // deep clone of a loop
+    // except paths that break the loop
+    // note; not need to clone variableInvolved
     Loop* cloneWithoutBreak() const;
 
-    // merge paths in loop, and delete loop
+    // merge paths in loop and delete loop
+    // note: merged loop must have same name as that of merging loop
     void merge(Loop* loop);
   };
 
+  // a path consists of a variable table,
+  // a list of constraints, a set of loops
+  // there are two kinds of paths
+  // one can break the loop and the other can not
   class LoopPath {
   private:
+    // set of variables, see VariableTable for more detail
     VariableTable* varTbl;
 
+    // a list of constraints, see ConstraintList for more detail
     ConstraintList* constraintList;
 
-    // set of inner loops
+    // a set of inner loops
     std::set<const Loop*> innerLoops;
 
     // whether this path can break the loop
@@ -74,7 +85,10 @@ namespace LE {
       constraintList->addConstraint(c);
     }
 
-    LoopPath* clone() const;
+    // a deep clone of path
+    LoopPath* clone() const {
+      return new LoopPath(varTbl->clone(), constraintList->clone(), canBreak);
+    }
   };
 
 }

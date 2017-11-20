@@ -47,8 +47,38 @@ $(executableFiles): $(objectFiles)
 	-I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) $(BOOST_CPPFLAGS) \
 	-o $@ $^ $(ROSE_LIBS)
 
-$(objectFiles): %.o:$(LE_SOURCE_DIR)/%.cpp
-	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $^ -o $@
+astHelper.o: $(LE_SOURCE_DIR)/astHelper.cpp \
+	$(LE_INCLUDE_DIR)/astHelper.h $(LE_INCLUDE_DIR)/message.h
+	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
+
+loop.o: $(LE_SOURCE_DIR)/loop.cpp $(LE_INCLUDE_DIR)/loop.h
+	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
+
+loopExtraction.o: $(LE_SOURCE_DIR)/loopExtraction.cpp \
+	$(LE_INCLUDE_DIR)/loopExtraction.h $(LE_INCLUDE_DIR)/message.h \
+	$(LE_INCLUDE_DIR)/constraint.h $(LE_INCLUDE_DIR)/printer.h \
+	$(LE_INCLUDE_DIR)/visitor.h $(LE_INCLUDE_DIR)/astHelper.h \
+	$(LE_INCLUDE_DIR)/loopNameAllocator.h
+	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
+
+loopNameAllocator.o: $(LE_SOURCE_DIR)/loopNameAllocator.cpp \
+	$(LE_INCLUDE_DIR)/loopNameAllocator.h
+	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
+
+main.o: $(LE_SOURCE_DIR)/main.cpp
+	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
+
+printer.o: $(LE_SOURCE_DIR)/printer.cpp \
+	$(LE_INCLUDE_DIR)/printer.h $(LE_INCLUDE_DIR)/astHelper.h
+	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
+
+variable.o: $(LE_SOURCE_DIR)/variable.cpp $(LE_INCLUDE_DIR)/variable.h \
+	$(LE_INCLUDE_DIR)/visitor.h
+	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
+
+visitor.o: $(LE_SOURCE_DIR)/visitor.cpp $(LE_INCLUDE_DIR)/visitor.h \
+	$(LE_INCLUDE_DIR)/variable.h
+	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
 
 .PHONY clean:
 	rm -f $(executableFiles) $(objectFiles)
