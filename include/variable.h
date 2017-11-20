@@ -9,6 +9,8 @@ namespace LE {
 
   class VariableTable;
 
+  // a variable consists of a name, a value
+  // it belongs to a variable table
   class Variable {
   private:
     VariableTable* parent;
@@ -24,6 +26,7 @@ namespace LE {
     inline bool isVarConstant() const {return this->isConstant;}
   };
 
+  // a variable table is a set of variables
   class VariableTable {
   private:
     std::map<std::string, Variable*> table;
