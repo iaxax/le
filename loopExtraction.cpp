@@ -148,7 +148,7 @@ namespace LE {
         handleReturnStatement(returnStmt, loop);
       } else {
         std::stringstream ss;
-        ss << stmt->class_name() << " unsupported now\n";
+        ss << stmt->class_name() << " unsupported in loop block\n";
         Message::warning(ss.str());
       }
     }

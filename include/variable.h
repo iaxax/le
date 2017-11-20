@@ -16,14 +16,13 @@ namespace LE {
     VariableTable* parent;
     std::string name;
     SgExpression* value;
-    bool isConstant;
 
   public:
-    Variable(std::string &n, SgExpression* v, VariableTable* tbl);
+    Variable(std::string &n, SgExpression *v, VariableTable *tbl)
+        : parent(tbl), name(n), value(v) {}
 
     inline std::string getName() const {return this->name;}
     inline SgExpression* getValue() const {return this->value;}
-    inline bool isVarConstant() const {return this->isConstant;}
   };
 
   // a variable table is a set of variables
@@ -32,9 +31,15 @@ namespace LE {
     std::map<std::string, Variable*> table;
 
   public:
-    bool isVarConstant(const std::string &name) const;
-    void addVariable(Variable* var);
-    void addVariable(const std::string &name, Variable* var);
+    inline void addVariable(Variable* var) {
+      assert(var != nullptr);
+      table[var->getName()] = var;
+    }
+
+    inline void addVariable(const std::string &name, Variable* var) {
+      table[name] = var;
+    }
+
     Variable* getVariable(const std::string &name) const;
     VariableTable* clone() const;
 

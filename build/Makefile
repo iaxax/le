@@ -72,12 +72,10 @@ printer.o: $(LE_SOURCE_DIR)/printer.cpp \
 	$(LE_INCLUDE_DIR)/printer.h $(LE_INCLUDE_DIR)/astHelper.h
 	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
 
-variable.o: $(LE_SOURCE_DIR)/variable.cpp $(LE_INCLUDE_DIR)/variable.h \
-	$(LE_INCLUDE_DIR)/visitor.h
+variable.o: $(LE_SOURCE_DIR)/variable.cpp $(LE_INCLUDE_DIR)/variable.h
 	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
 
-visitor.o: $(LE_SOURCE_DIR)/visitor.cpp $(LE_INCLUDE_DIR)/visitor.h \
-	$(LE_INCLUDE_DIR)/variable.h
+visitor.o: $(LE_SOURCE_DIR)/visitor.cpp $(LE_INCLUDE_DIR)/visitor.h
 	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
 
 .PHONY clean:
