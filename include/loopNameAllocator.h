@@ -6,10 +6,15 @@
 
 namespace LE {
 
+  // allocate global unique name for loop
   class LoopNameAllocator {
   private:
+    // id, every time allocLoopName() is called
+    // it will increment
     static int id;
+
   public:
+    // get a global unique name
     static std::string allocLoopName();
   };
 }
