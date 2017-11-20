@@ -69,58 +69,47 @@ namespace LE {
     // handle all expressions that changes values of variables
     SgUnaryOp *unaryOp;
     if (SgAssignOp *assignOp = dynamic_cast<SgAssignOp*>(expr)) {
-      SgNode* left = assignOp->get_lhs_operand();
-      SgExpression* leftExpr = dynamic_cast<SgExpression*>(left);
-      assert(leftExpr != nullptr);
+      SgExpression* leftExpr = assignOp->get_lhs_operand();
       std::string name = getOperandName(leftExpr);
-      SgNode* value = ASTHelper::clone(assignOp->get_rhs_operand());
+      SgExpression* value = ASTHelper::clone(assignOp->get_rhs_operand());
 
       Variable* oldVar = varTbl->getVariable(name);
       if (oldVar != nullptr) {
         ASTHelper::replaceVar(value, oldVar->getValue(), name);
       }
 
-      Variable* newVar = new Variable(
-        name, dynamic_cast<SgExpression*>(value), varTbl);
+      Variable* newVar = new Variable(name, value, varTbl);
       varTbl->addVariable(newVar);
     } else if ((unaryOp = dynamic_cast<SgPlusPlusOp*>(expr))
             || (unaryOp = dynamic_cast<SgMinusMinusOp*>(expr))) {
-      SgNode* operand = unaryOp->get_operand();
-      SgExpression* opExpr = dynamic_cast<SgExpression*>(operand);
-      assert(opExpr != nullptr);
+      SgExpression* opExpr = unaryOp->get_operand();
       std::string name = getOperandName(opExpr);
-      SgNode* value = ASTHelper::clone(unaryOp);
+      SgExpression* value = ASTHelper::clone(unaryOp);
 
       Variable* oldVar = varTbl->getVariable(name);
       if (oldVar != nullptr) {
         ASTHelper::replaceVar(value, oldVar->getValue(), name);
       }
 
-      Variable* newVar = new Variable(
-        name, dynamic_cast<SgExpression*>(value), varTbl);
+      Variable* newVar = new Variable(name, value, varTbl);
       varTbl->addVariable(newVar);
     } else if (SgCompoundAssignOp *compoundOp = dynamic_cast<SgCompoundAssignOp*>(expr)) {
-      SgNode* left = compoundOp->get_lhs_operand();
-      SgExpression* leftExpr = dynamic_cast<SgExpression*>(left);
-      assert(leftExpr != nullptr);
+      SgExpression* leftExpr = compoundOp->get_lhs_operand();
       std::string name = getOperandName(leftExpr);
 
       Variable* oldVar = varTbl->getVariable(name);
       Variable* newVar;
       if (oldVar != nullptr) {
-        SgBinaryOp* newValue = dynamic_cast<SgBinaryOp*>(
-          ASTHelper::clone(compoundOp)
-        );
+        SgCompoundAssignOp* newValue = ASTHelper::clone(compoundOp);
         ASTHelper::replaceVar(newValue, oldVar->getValue(), name);
         newVar = new Variable(name, ASTHelper::toBinaryOp(
           compoundOp->variantT(), newValue->get_lhs_operand(),
           newValue->get_rhs_operand(), compoundOp->get_type()
         ), varTbl);
       } else {
-        SgNode* value = ASTHelper::clone(compoundOp->get_rhs_operand());
+        SgExpression* value = ASTHelper::clone(compoundOp->get_rhs_operand());
         newVar = new Variable(name, ASTHelper::toBinaryOp(
-          compoundOp->variantT(), leftExpr,
-          dynamic_cast<SgExpression*>(value), compoundOp->get_type()
+          compoundOp->variantT(), leftExpr, value, compoundOp->get_type()
         ), varTbl);
       }
 
@@ -262,8 +251,7 @@ namespace LE {
     SgExpression* condition = nullptr;
     // condition may be null e.g. for(;;) {}
     if (exprStmt != nullptr) {
-      condition = dynamic_cast<SgExpression*>(
-        ASTHelper::clone(exprStmt->get_expression()));
+      condition = ASTHelper::clone(exprStmt->get_expression());
     }
 
     // create path jumping in loop

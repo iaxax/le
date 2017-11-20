@@ -10,7 +10,12 @@ namespace LE {
   class ASTHelper {
   public:
     // deep clone of an AST
-    static SgNode* clone(SgNode* node);
+    // T must be SgNode or subclass of SgNode
+    template<class T>
+    static T* clone(T* node) {
+      SgTreeCopy deepCopy;
+      return dynamic_cast<T*>(deepCopy.copyAst(dynamic_cast<SgNode*>(node)));
+    }
 
     // traverse AST to replace every occurrence of
     // variable having the given name with a new value

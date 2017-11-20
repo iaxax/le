@@ -78,11 +78,6 @@ namespace LE {
   };
   static Init init;
 
-  SgNode* ASTHelper::clone(SgNode* node) {
-    SgTreeCopy deepCopy;
-    return deepCopy.copyAst(node);
-  }
-
   SgBinaryOp* ASTHelper::toBinaryOp(VariantT type, SgExpression* lhs,
     SgExpression* rhs, SgType* exprType) {
     auto iter = constructorMap.find(type);
