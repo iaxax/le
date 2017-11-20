@@ -138,10 +138,6 @@ namespace LE {
       } else {
         replaceVar(operand, newValue, name);
       }
-    } else {
-      std::stringstream ss;
-      ss << tree->class_name() << " unsupported in ASTHelper::replaceVar\n";
-      Message::warning(ss.str());
     }
   }
 }
