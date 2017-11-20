@@ -28,6 +28,8 @@ namespace LE {
     static SgBinaryOp* toBinaryOp(VariantT type, SgExpression* lhs,
       SgExpression* rhs, SgType* exprType);
 
+    // map from int value of operator to string
+    // e.g. VariantT::V_SgEqualityOp -> '=='
     static std::string getOperatorString(VariantT type);
   };
 

@@ -7,13 +7,14 @@ namespace LE {
 
   // ------------------------- init data ----------------------------------//
 
-  // given a compoundAssign type, return the corresbonding type
+  // map compoundAssign type to binary operator constructor
   // e.g. SgPlusAssignOp -> SgAddOp
   typedef std::map<VariantT, std::function<
     SgBinaryOp*(SgExpression*, SgExpression*, SgType*)> > ConstructorMap;
 
   static ConstructorMap constructorMap;
 
+  // macro for convenience of adding content to constructorMap
   #define ADD_TYPE_CONSTRUCTOR(variant, BinaryOp) constructorMap[variant] = \
     [](SgExpression* lhs, SgExpression* rhs, SgType* type) \
     { return new BinaryOp(lhs, rhs, type); };
@@ -31,6 +32,7 @@ namespace LE {
     ADD_TYPE_CONSTRUCTOR(V_SgRshiftAssignOp, SgRshiftOp)
   }
 
+  // map from int to string form of operator
   static std::map<VariantT, std::string> typeStrMap;
   void initTypeStringMap() {
     typeStrMap[V_SgEqualityOp] = "==";
