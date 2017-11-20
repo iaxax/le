@@ -18,7 +18,7 @@ namespace LE {
     }
 
     // traverse AST to replace every occurrence of
-    // variable having the given name with a new value
+    // variable with a new value
     static void replaceVar(SgNode* tree,
       SgExpression* newValue, const std::string& name);
 

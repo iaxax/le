@@ -1,5 +1,7 @@
 #include "astHelper.h"
+#include "message.h"
 #include <cassert>
+#include <sstream>
 
 namespace LE {
 
@@ -97,17 +99,23 @@ namespace LE {
     // replace both side (lhs and rhs) with the new value
     // if it is the variable we want
     if (SgBinaryOp *binOp = dynamic_cast<SgBinaryOp*>(tree)) {
-      SgNode* left = binOp->get_lhs_operand();
+      SgExpression* left = binOp->get_lhs_operand();
+      // if lhs operand is a variable
+      // check whether it is the variable we looking for by its name
+      // if it is, replace its value with new value
+      // otherwise, ignore it
       if (SgVarRefExp *leftVar = dynamic_cast<SgVarRefExp*>(left)) {
         std::string n = leftVar->get_symbol()->get_name().getString();
         if (name == n) {
           binOp->set_lhs_operand(newValue);
         }
       } else {
+        // if it is not a variable, recursively to traverse subtree
         replaceVar(left, newValue, name);
       }
 
-      SgNode* right = binOp->get_rhs_operand();
+      // do similar thing as lhs operand
+      SgExpression* right = binOp->get_rhs_operand();
       if (SgVarRefExp *rightVar = dynamic_cast<SgVarRefExp*>(right)) {
         std::string n = rightVar->get_symbol()->get_name().getString();
         if (name == n) {
@@ -119,7 +127,7 @@ namespace LE {
     } else if (SgUnaryOp *uOp = dynamic_cast<SgUnaryOp*>(tree)) {
       // if it is a unary operator
       // do similar thing as binary operator does
-      SgNode* operand = uOp->get_operand();
+      SgExpression* operand = uOp->get_operand();
       if (SgVarRefExp *var = dynamic_cast<SgVarRefExp*>(operand)) {
         std::string n = var->get_symbol()->get_name().getString();
         if (name == n) {
@@ -128,6 +136,10 @@ namespace LE {
       } else {
         replaceVar(operand, newValue, name);
       }
+    } else {
+      std::stringstream ss;
+      ss << tree->class_name() << " unsupported in ASTHelper::replaceVar\n";
+      Message::warning(ss.str());
     }
   }
 }
