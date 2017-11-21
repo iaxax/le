@@ -54,13 +54,13 @@ namespace LE {
     void handleIfStatement(SgIfStmt* ifStmt, Loop* loop);
 
     // extract a loop from a while statement
-    void handleWhileStatment(SgWhileStmt* whileStmt);
+    void handleWhileStatment(SgWhileStmt* whileStmt, Loop* loop);
 
     // extract a loop from a for statement
     void handleForStatement(SgForStatement* forStmt, Loop* loop);
 
     // extract a loop from a do-while statement
-    void handleDoWhileStatement(SgDoWhileStmt* doStmt);
+    void handleDoWhileStatement(SgDoWhileStmt* doStmt, Loop* loop);
 
     // handle a general statement
     // it delegates jobs to other concrete statements

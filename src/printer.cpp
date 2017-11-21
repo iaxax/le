@@ -48,6 +48,9 @@ namespace LE {
         // --
         printExpression(os, unaryOp->get_operand());
         os << " - 1";
+      } else if (SgCastExp* castExp = dynamic_cast<SgCastExp*>(unaryOp)) {
+        // cast
+        printExpression(os, castExp->get_operand());
       } else {
         os << ASTHelper::getOperatorString(unaryOp->variantT());
         printExpression(os, unaryOp->get_operand());

@@ -164,7 +164,8 @@ namespace LE {
 
   void LoopExtraction::handleSwitchStatement(SgSwitchStatement* switchStmt,
                                              Loop* loop) {
-
+    // TODO
+    Message::warning("switch-case unsupported yet");
   }
 
   void LoopExtraction::handleIfStatement(SgIfStmt* ifStmt, Loop* loop) {
@@ -202,22 +203,52 @@ namespace LE {
     loop->merge(newLoop);
   }
 
-  void LoopExtraction::handleWhileStatment(SgWhileStmt* whileStmt) {
+  void LoopExtraction::handleWhileStatment(SgWhileStmt* whileStmt, Loop* loop) {
+    // handle condition of while
+    SgStatement* testStmt = whileStmt->get_condition();
+    SgExprStatement* exprStmt = dynamic_cast<SgExprStatement*>(testStmt);
+    assert(exprStmt != nullptr);
+    SgExpression* condition = exprStmt->get_expression();
+    handleExpression(condition, loop);
 
+    VariableTable *varTbl = new VariableTable;
+
+    // create loop path that jumps into loop
+    ConstraintList* inConstraint = new ConstraintList;
+    inConstraint->addConstraint(condition);
+    LoopPath* inPath = new LoopPath(varTbl, inConstraint, loop, false);
+    varTbl->setParent(inPath);
+
+    // create path jumping out of loop
+    ConstraintList* outConstraint = new ConstraintList;
+    outConstraint->addConstraint(new SgNotOp(condition, condition->get_type()));
+    LoopPath* outPath = new LoopPath(varTbl->clone(), outConstraint, loop, true);
+
+    // add paths
+    loop->addPath(inPath);
+    loop->addPath(outPath);
+
+    // handle body of while
+    SgStatement* bodyStmt = whileStmt->get_body();
+    handleStatement(bodyStmt, loop);
+
+    // print result
+    Printer::print(std::cout, loop);
   }
 
   void LoopExtraction::handleForStatement(SgForStatement* forStmt, Loop* loop) {
-    VariableTable *varTbl = new VariableTable;
     SgStatement* testStmt = forStmt->get_test();
     SgExprStatement* exprStmt = dynamic_cast<SgExprStatement*>(testStmt);
     SgExpression* condition = nullptr;
     // condition may be null e.g. for(;;) {}
     if (exprStmt != nullptr) {
-      condition = ASTHelper::clone(exprStmt->get_expression());
+      condition = exprStmt->get_expression();
     }
     // collect variables involved in for_test_statement
     // and store them in VariableTable
     handleExpression(condition, loop);
+
+    VariableTable *varTbl = new VariableTable;
 
     // create path jumping into loop
     ConstraintList* inConstraint = new ConstraintList;
@@ -254,8 +285,49 @@ namespace LE {
     Printer::print(std::cout, loop);
   }
 
-  void LoopExtraction::handleDoWhileStatement(SgDoWhileStmt* doStmt) {
+  void LoopExtraction::handleDoWhileStatement(SgDoWhileStmt* doStmt, Loop* loop) {
+    // create a loop path
+    // in do-while, body must at least be executed once
+    // so at the beginning, the loop has a path
+    VariableTable* varTbl = new VariableTable;
+    ConstraintList* cl = new ConstraintList;
+    LoopPath* path = new LoopPath(varTbl, cl, loop, false);
+    varTbl->setParent(path);
+    loop->addPath(path);
 
+    // handle body of do-while
+    SgStatement* bodyStmt = doStmt->get_body();
+    handleStatement(bodyStmt, loop);
+
+    // handle condition of do-while
+    SgStatement* testStmt = doStmt->get_condition();
+    SgExprStatement* exprStmt = dynamic_cast<SgExprStatement*>(testStmt);
+    assert(exprStmt != nullptr);
+    SgExpression* condition = exprStmt->get_expression();
+
+    // fork a new set of paths
+    // mark these paths canBreak = true
+    Loop* newLoop = loop->cloneWithoutBreak();
+    handleExpression(condition, newLoop);
+    SgExpression* outCond = new SgNotOp(condition, condition->get_type());
+    for (LoopPath* loopPath : *newLoop) {
+      loopPath->addConstraint(outCond);
+      loopPath->setCanBreak(true);
+    }
+
+    // add constraint to origin paths
+    handleExpression(condition, loop);
+    for (LoopPath* loopPath : *loop) {
+      if (!loopPath->canBreakLoop()) {
+        loopPath->addConstraint(condition);
+      }
+    }
+
+    // merge two set of paths
+    loop->merge(newLoop);
+
+    // print result
+    Printer::print(std::cout, loop);
   }
 
   void LoopExtraction::handleStatement(SgStatement* stmt, Loop* loop) {
@@ -266,9 +338,13 @@ namespace LE {
       loop->addInnerLoop(innerLoop);
       handleForStatement(forStmt, innerLoop);
     } else if (SgWhileStmt* whileStmt = dynamic_cast<SgWhileStmt*>(stmt)) {
-      handleWhileStatment(whileStmt);
+      Loop* innerLoop = new Loop(LoopNameAllocator::allocLoopName(), loop);
+      loop->addInnerLoop(innerLoop);
+      handleWhileStatment(whileStmt, innerLoop);
     } else if (SgDoWhileStmt* doStmt = dynamic_cast<SgDoWhileStmt*>(stmt)) {
-      handleDoWhileStatement(doStmt);
+      Loop* innerLoop = new Loop(LoopNameAllocator::allocLoopName(), loop);
+      loop->addInnerLoop(innerLoop);
+      handleDoWhileStatement(doStmt, innerLoop);
     } else if (SgIfStmt *ifStmt = dynamic_cast<SgIfStmt*>(stmt)) {
       handleIfStatement(ifStmt, loop);
     } else if (SgSwitchStatement* switchStmt = dynamic_cast<SgSwitchStatement*>(stmt)) {
@@ -306,9 +382,11 @@ namespace LE {
         Loop* loop = new Loop(LoopNameAllocator::allocLoopName(), nullptr);
         handleForStatement(forStmt, loop);
       } else if (SgWhileStmt *whileStmt = dynamic_cast<SgWhileStmt*>(stmt)) {
-        handleWhileStatment(whileStmt);
+        Loop* loop = new Loop(LoopNameAllocator::allocLoopName(), nullptr);
+        handleWhileStatment(whileStmt, loop);
       } else if (SgDoWhileStmt* doStmt = dynamic_cast<SgDoWhileStmt*>(stmt)) {
-        handleDoWhileStatement(doStmt);
+        Loop* loop = new Loop(LoopNameAllocator::allocLoopName(), nullptr);
+        handleDoWhileStatement(doStmt, loop);
       }
     }
   }

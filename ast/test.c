@@ -32,12 +32,16 @@
 //    foo(1);
 //}
 
-void f() {
-    do {
-        int i, k;
-        int j = 0;
-        int *p = &i;
-    } while(2);
+double evaluate(int n) {
+    double e = 1;
+    double t = 1;
+    int i=1;
+    while (i <= n) {
+        t=t/i;
+        e=e+t;
+        i+=1;
+    }
+    return e;
 }
 
 int main(int argc, char* argv[]) {
