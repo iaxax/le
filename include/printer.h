@@ -27,6 +27,10 @@ namespace LE {
     static void printVarInvolved(std::ostream& os,
                                 const std::set<std::string>& variables);
 
+    // print names of inner loops
+    static void printInnerLoops(std::ostream& os,
+                                const std::set<std::string>& loopNames);
+
     // print a path, see README for more detail
     static void printPath(std::ostream& os, LoopPath* path);
 

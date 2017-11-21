@@ -21,6 +21,15 @@ int f() {
     }
   }
 
+  // test for nested loop
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      s++;
+      for (int k = 0; k < 3; ++k);
+    }
+    for (int j = 0; j < i; ++j);
+  }
+
 }
 
 int main(int argc, char* argv[]) {

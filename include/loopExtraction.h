@@ -2,7 +2,6 @@
 #define LOOP_EXTRACTION_H
 
 #include "rose.h"
-#include "variable.h"
 #include "loop.h"
 
 namespace LE {
@@ -50,7 +49,7 @@ namespace LE {
     void handleWhileStatment(SgWhileStmt* whileStmt);
 
     // extract a loop from a for statement
-    void handleForStatement(SgForStatement* forStmt);
+    void handleForStatement(SgForStatement* forStmt, Loop* loop);
 
     // extract a loop from a do-while statement
     void handleDoWhileStatement(SgDoWhileStmt* doStmt);

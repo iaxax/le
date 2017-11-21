@@ -37,7 +37,7 @@ ROSE_LIBS = $(ROSE_LIB_DIR)/librose.la
 
 executableFiles = le
 
-objectFiles = astHelper.o variable.o visitor.o \
+objectFiles = astHelper.o visitor.o \
 							loopNameAllocator.o loopExtraction.o \
 							loop.o printer.o main.o
 
@@ -73,9 +73,6 @@ main.o: $(LE_SOURCE_DIR)/main.cpp
 
 printer.o: $(LE_SOURCE_DIR)/printer.cpp \
 	$(LE_INCLUDE_DIR)/printer.h $(LE_INCLUDE_DIR)/astHelper.h
-	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
-
-variable.o: $(LE_SOURCE_DIR)/variable.cpp $(LE_INCLUDE_DIR)/variable.h
 	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
 
 visitor.o: $(LE_SOURCE_DIR)/visitor.cpp $(LE_INCLUDE_DIR)/visitor.h

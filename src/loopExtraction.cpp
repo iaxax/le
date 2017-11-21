@@ -21,8 +21,7 @@ namespace LE {
     return oss.str();
   }
 
-  void LoopExtraction::handleExpression(SgExpression* expr,
-                          VariableTable* varTbl) {
+  void LoopExtraction::handleExpression(SgExpression* expr, VariableTable* varTbl) {
     // depth-first-search, handle all sub-expression first
     if (SgBinaryOp* binOp = dynamic_cast<SgBinaryOp*>(expr)) {
       SgExpression* leftExpr = binOp->get_lhs_operand();
@@ -105,7 +104,7 @@ namespace LE {
   }
 
   void LoopExtraction::handleVarDeclaration(SgVariableDeclaration* varDecl, Loop* loop) {
-
+    std::cout << "decl\n";
   }
 
   void LoopExtraction::handleBreakStatement(SgBreakStmt* breakStmt, Loop* loop) {
@@ -156,7 +155,6 @@ namespace LE {
     SgStatement* trueBody = ifStmt->get_true_body();
     handleStatement(trueBody, loop);
 
-
     // handle false body
     SgStatement* falseBody = ifStmt->get_false_body();
     if (falseBody != nullptr) {
@@ -171,7 +169,7 @@ namespace LE {
 
   }
 
-  void LoopExtraction::handleForStatement(SgForStatement* forStmt) {
+  void LoopExtraction::handleForStatement(SgForStatement* forStmt, Loop* loop) {
     VariableTable *varTbl = new VariableTable;
     SgStatement* testStmt = forStmt->get_test();
     SgExprStatement* exprStmt = dynamic_cast<SgExprStatement*>(testStmt);
@@ -180,6 +178,9 @@ namespace LE {
     if (exprStmt != nullptr) {
       condition = ASTHelper::clone(exprStmt->get_expression());
     }
+    // collect variables involved in for_test_statement
+    // and store them in VariableTable
+    handleExpression(condition, loop);
 
     // create path jumping into loop
     ConstraintList* inConstraint = new ConstraintList;
@@ -188,7 +189,8 @@ namespace LE {
     } else {
       inConstraint->addConstraint(new SgBoolValExp(1));
     }
-    LoopPath* inPath = new LoopPath(varTbl, inConstraint, false);
+    LoopPath* inPath = new LoopPath(varTbl, inConstraint, loop, false);
+    varTbl->setParent(inPath);
 
     // create path jumping out of loop
     ConstraintList* outConstraint = new ConstraintList;
@@ -197,16 +199,11 @@ namespace LE {
     } else {
       outConstraint->addConstraint(new SgBoolValExp(0));
     }
-    LoopPath* outPath = new LoopPath(varTbl->clone(), outConstraint, true);
+    LoopPath* outPath = new LoopPath(varTbl->clone(), outConstraint, loop, true);
 
-    // create loop
-    Loop *loop = new Loop(LoopNameAllocator::allocLoopName());
+    // add paths
     loop->addPath(inPath);
     loop->addPath(outPath);
-
-    // collect variables involved in for_test_statement
-    // and store them in VariableTable
-    handleExpression(condition, varTbl);
 
     // handle loop body
     SgStatement* bodyStmt = forStmt->get_loop_body();
@@ -228,7 +225,9 @@ namespace LE {
     if (SgBasicBlock* block = dynamic_cast<SgBasicBlock*>(stmt)) {
       handleLoopBlock(block, loop);
     } else if (SgForStatement* forStmt = dynamic_cast<SgForStatement*>(stmt)) {
-      handleForStatement(forStmt);
+      Loop* innerLoop = new Loop(LoopNameAllocator::allocLoopName(), loop);
+      loop->addInnerLoop(innerLoop);
+      handleForStatement(forStmt, innerLoop);
     } else if (SgWhileStmt* whileStmt = dynamic_cast<SgWhileStmt*>(stmt)) {
       handleWhileStatment(whileStmt);
     } else if (SgDoWhileStmt* doStmt = dynamic_cast<SgDoWhileStmt*>(stmt)) {
@@ -267,7 +266,8 @@ namespace LE {
 
     for (SgStatement* stmt : stmtList) {
       if (SgForStatement *forStmt = dynamic_cast<SgForStatement*>(stmt)) {
-        handleForStatement(forStmt);
+        Loop* loop = new Loop(LoopNameAllocator::allocLoopName(), nullptr);
+        handleForStatement(forStmt, loop);
       } else if (SgWhileStmt *whileStmt = dynamic_cast<SgWhileStmt*>(stmt)) {
         handleWhileStatment(whileStmt);
       } else if (SgDoWhileStmt* doStmt = dynamic_cast<SgDoWhileStmt*>(stmt)) {

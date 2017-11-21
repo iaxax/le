@@ -101,9 +101,27 @@ namespace LE {
     }
   }
 
+  void Printer::printInnerLoops(std::ostream& os, const std::set<std::string>& loopNames) {
+    os << indent << "inner loop: {";
+    if (loopNames.empty()) {
+      os << "}\n";
+      return;
+    }
+
+    for (auto it = loopNames.begin(), ie = loopNames.end(); it != ie; ++it) {
+      if (++it == ie) {
+        os << " [" << *--it << "] }\n";
+      } else {
+        os << " [" << *--it << "],";
+      }
+    }
+  }
+
   void Printer::printPath(std::ostream& os, LoopPath* path) {
     printVariableUpdate(os, path->getVariableTable());
+    printInnerLoops(os, path->getInnerLoops());
     printConstraint(os, path->getConstraintList());
+
     os << indent << "break: ";
     os << (path->canBreakLoop() ? "true" : "false") << "\n";
   }

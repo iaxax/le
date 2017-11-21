@@ -1,5 +1,4 @@
 #include "visitor.h"
-#include <iostream>
 
 namespace LE {
 
