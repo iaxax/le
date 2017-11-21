@@ -21,6 +21,35 @@ namespace LE {
     return oss.str();
   }
 
+  // bool LoopExtraction::updateNearestVar(SgExpression* value,
+  //                                       const std::string &name,
+  //                                       VariableTable* varTbl) {
+  //   LoopPath* loopPath = varTbl->getParent();
+  //   Loop* loop = loopPath->getParent();
+  //   // search along the loop link
+  //   while (loop != nullptr && loop->getParent() != nullptr) {
+  //     loop = loop->getParent();
+  //     // if we find the loop contains the variable
+  //     if (loop->containVariable(name)) {
+  //       // update every occurrences of the variable in every variable table
+  //       for (auto it = loop->begin(), ie = loop->end(); it != ie; ++it) {
+  //         VariableTable* tbl = (*it)->getVariableTable();
+  //         Variable* var = tbl->getVariable(name);
+  //         // if variable table contains this variable
+  //         if (var != nullptr) {
+  //           // update the old value
+  //           ASTHelper::replaceVar(value, var->getValue(), name);
+  //           Variable* newVar = new Variable(name, value, tbl);
+  //           tbl->addVariable(name, newVar);
+  //         }
+  //       }
+  //       return true;
+  //     }
+  //   }
+  //   // can't find this variable
+  //   return false;
+  // }
+
   void LoopExtraction::handleExpression(SgExpression* expr, VariableTable* varTbl) {
     // depth-first-search, handle all sub-expression first
     if (SgBinaryOp* binOp = dynamic_cast<SgBinaryOp*>(expr)) {
@@ -46,7 +75,6 @@ namespace LE {
       if (oldVar != nullptr) {
         ASTHelper::replaceVar(value, oldVar->getValue(), name);
       }
-
       Variable* newVar = new Variable(name, value, varTbl);
       varTbl->addVariable(newVar);
     } else if ((unaryOp = dynamic_cast<SgPlusPlusOp*>(expr))
@@ -104,7 +132,16 @@ namespace LE {
   }
 
   void LoopExtraction::handleVarDeclaration(SgVariableDeclaration* varDecl, Loop* loop) {
-    std::cout << "decl\n";
+    SgInitializedNamePtrList& list = varDecl->get_variables();
+    for (SgInitializedName* name : list) {
+      loop->addVariable(name->get_name().getString());
+      if (SgAssignInitializer* initializer = dynamic_cast<SgAssignInitializer*>(name->get_initptr())) {
+        SgVariableSymbol* symbol = new SgVariableSymbol(name);
+        SgVarRefExp* var = new SgVarRefExp(symbol);
+        SgAssignOp* assignOp = new SgAssignOp(var, initializer, initializer->get_type());
+        handleExpression(assignOp, loop);
+      }
+    }
   }
 
   void LoopExtraction::handleBreakStatement(SgBreakStmt* breakStmt, Loop* loop) {

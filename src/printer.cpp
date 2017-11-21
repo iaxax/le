@@ -53,6 +53,10 @@ namespace LE {
         printExpression(os, unaryOp->get_operand());
       }
       os << ")";
+    } else if (SgAssignInitializer* initializer = dynamic_cast<SgAssignInitializer*>(expr)) {
+      // assign initializer
+      SgExpression* operand = initializer->get_operand();
+      printExpression(os, operand);
     } else {
       std::stringstream ss;
       ss << expr->class_name() << " unsupported in Printer::printExpression\n";

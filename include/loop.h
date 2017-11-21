@@ -23,7 +23,7 @@ namespace LE {
     SgExpression* value;
 
   public:
-    Variable(std::string &n, SgExpression *v, VariableTable *tbl)
+    Variable(const std::string &n, SgExpression *v, VariableTable *tbl)
         : parent(tbl), name(n), value(v) {}
 
     inline std::string getName() const {return this->name;}
@@ -134,6 +134,10 @@ namespace LE {
     Loop(const std::string& n, Loop* p): parent(p), name(n) {}
     inline void addPath(LoopPath* p) {paths.insert(p);}
     inline void addVariable(std::string n) { variableInvolved.insert(n); }
+    inline bool containVariable(const std::string &name) {
+      return variableInvolved.find(name) != variableInvolved.end();
+    }
+
     inline std::string getName() {return name;}
     inline Loop* getParent() { return parent; }
     void addInnerLoop(Loop* loop);

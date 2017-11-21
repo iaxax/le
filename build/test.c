@@ -16,16 +16,26 @@ int f() {
       i += 2;
     } else if (i > 3){
       j -= 3;
-    } else {
+    } else if (i * j < 4){
       i += i;
+    } else {
+      break;
     }
   }
 
   // test for nested loop
   for (int i = 0; i < 2; ++i) {
+    int s = q + n;
     for (int j = 0; j < 2; ++j) {
-      s++;
-      for (int k = 0; k < 3; ++k);
+      s = s + 1;
+      s = s * s;
+      for (int k = 0; k < 3; ++k) {
+        if (k < 1) {
+          s = 3;
+        } else {
+          s = 2;
+        }
+      }
     }
     for (int j = 0; j < i; ++j);
   }

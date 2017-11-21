@@ -20,6 +20,14 @@ namespace LE {
     // e.g 'var', 'arr[i]', '*p'
     std::string getOperandName(SgExpression* expr);
 
+    // if we can't find a variable in current variable table
+    // it may locate in variable table of a outer loop
+    // so we search along this link and find the nearest variable table
+    // and update the value of the variable
+    // if we find this variable in outer loop, return true, otherwise false
+    // bool updateNearestVar(SgExpression* value, const std::string &name,
+    //                       VariableTable* varTbl);
+
     // record variable updates in an expression
     void handleExpression(SgExpression* expr, VariableTable* varTbl);
 
