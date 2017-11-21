@@ -36,6 +36,10 @@ void f() {
     int s[3];
     int p = s[0];
     s[1] = 2;
+
+    do {
+     int i;
+    } while(p == 2);
 }
 
 int main(int argc, char* argv[]) {

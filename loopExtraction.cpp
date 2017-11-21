@@ -16,61 +16,31 @@
 namespace LE {
 
   std::string LoopExtraction::getOperandName(SgExpression* expr) {
-    if (SgVarRefExp *varRef = dynamic_cast<SgVarRefExp*>(expr)) {
-      return varRef->get_symbol()->get_name().getString();
-    } else if (SgPointerDerefExp* ptrDeref = dynamic_cast<SgPointerDerefExp*>(expr)) {
-      SgExpression* operand = dynamic_cast<SgExpression*>(ptrDeref->get_operand());
-      assert(operand != nullptr);
-      std::ostringstream oss;
-      oss << "*";
-      Printer::printExpression(oss, operand);
-      return oss.str();
-    } else if (SgPntrArrRefExp* arrRef = dynamic_cast<SgPntrArrRefExp*>(expr)) {
-      std::ostringstream oss;
-      SgExpression* left = dynamic_cast<SgExpression*>(arrRef->get_lhs_operand());
-      assert(left != nullptr);
-      Printer::printExpression(oss, left);
-
-      SgExpression* right = dynamic_cast<SgExpression*>(arrRef->get_rhs_operand());
-      assert(right != nullptr);
-      oss << "[";
-      Printer::printExpression(oss, right);
-      oss << "]";
-
-      return oss.str();
-    } else {
-      std::stringstream ss;
-      ss << "can not get name from " << expr->class_name() << "\n";
-      Message::error(ss.str());
-      return "";
-    }
+    std::ostringstream oss;
+    Printer::printExpression(oss, expr);
+    return oss.str();
   }
 
   void LoopExtraction::handleExpression(SgExpression* expr,
                           VariableTable* varTbl) {
     // depth-first-search, handle all sub-expression first
     if (SgBinaryOp* binOp = dynamic_cast<SgBinaryOp*>(expr)) {
-      SgNode* left = binOp->get_lhs_operand();
-      if (SgExpression* leftExpr = dynamic_cast<SgExpression*>(left)) {
-        handleExpression(leftExpr, varTbl);
-      }
+      SgExpression* leftExpr = binOp->get_lhs_operand();
+      handleExpression(leftExpr, varTbl);
 
-      SgNode* right = binOp->get_rhs_operand();
-      if (SgExpression* rightExpr = dynamic_cast<SgExpression*>(right)) {
-        handleExpression(rightExpr, varTbl);
-      }
+      SgExpression* rightExpr = binOp->get_rhs_operand();
+      handleExpression(rightExpr, varTbl);
     } else if (SgUnaryOp* unaryOp = dynamic_cast<SgUnaryOp*>(expr)) {
-      SgNode* operand = unaryOp->get_operand();
-      if (SgExpression* e = dynamic_cast<SgExpression*>(operand)) {
-        handleExpression(e, varTbl);
-      }
+      SgExpression* operand = unaryOp->get_operand();
+      handleExpression(operand, varTbl);
     }
 
     // handle all expressions that changes values of variables
     SgUnaryOp *unaryOp;
     if (SgAssignOp *assignOp = dynamic_cast<SgAssignOp*>(expr)) {
+      // assignment
       SgExpression* leftExpr = assignOp->get_lhs_operand();
-      std::string name = getOperandName(leftExpr);
+      std::string&& name = getOperandName(leftExpr);
       SgExpression* value = ASTHelper::clone(assignOp->get_rhs_operand());
 
       Variable* oldVar = varTbl->getVariable(name);
@@ -82,8 +52,9 @@ namespace LE {
       varTbl->addVariable(newVar);
     } else if ((unaryOp = dynamic_cast<SgPlusPlusOp*>(expr))
             || (unaryOp = dynamic_cast<SgMinusMinusOp*>(expr))) {
+      // ++/--
       SgExpression* opExpr = unaryOp->get_operand();
-      std::string name = getOperandName(opExpr);
+      std::string&& name = getOperandName(opExpr);
       SgExpression* value = ASTHelper::clone(unaryOp);
 
       Variable* oldVar = varTbl->getVariable(name);
@@ -94,68 +65,32 @@ namespace LE {
       Variable* newVar = new Variable(name, value, varTbl);
       varTbl->addVariable(newVar);
     } else if (SgCompoundAssignOp *compoundOp = dynamic_cast<SgCompoundAssignOp*>(expr)) {
+      // +=, -=, *= ...
       SgExpression* leftExpr = compoundOp->get_lhs_operand();
       std::string name = getOperandName(leftExpr);
 
       Variable* oldVar = varTbl->getVariable(name);
-      Variable* newVar;
+      SgExpression *lhsValue, *rhsValue;
       if (oldVar != nullptr) {
         SgCompoundAssignOp* newValue = ASTHelper::clone(compoundOp);
         ASTHelper::replaceVar(newValue, oldVar->getValue(), name);
-        newVar = new Variable(name, ASTHelper::toBinaryOp(
-          compoundOp->variantT(), newValue->get_lhs_operand(),
-          newValue->get_rhs_operand(), compoundOp->get_type()
-        ), varTbl);
+        lhsValue = newValue->get_lhs_operand();
+        rhsValue = newValue->get_rhs_operand();
       } else {
-        SgExpression* value = ASTHelper::clone(compoundOp->get_rhs_operand());
-        newVar = new Variable(name, ASTHelper::toBinaryOp(
-          compoundOp->variantT(), leftExpr, value, compoundOp->get_type()
-        ), varTbl);
+        lhsValue = ASTHelper::clone(leftExpr);
+        rhsValue = ASTHelper::clone(compoundOp->get_rhs_operand());
       }
 
-      varTbl->addVariable(newVar);
+      SgBinaryOp* binOp = ASTHelper::toBinaryOp(
+        compoundOp->variantT(), lhsValue, rhsValue, compoundOp->get_type()
+      );
+
+      varTbl->addVariable(new Variable(name, binOp, varTbl));
     }
   }
 
-  void LoopExtraction::handleCondition(SgExpression* condition, Loop* loop) {
-    VariableCollector collector(loop);
-    collector.traverse(condition, preorder);
-
-    for (auto it = loop->begin(), ie = loop->end(); it != ie; ++it) {
-      if (!(*it)->canBreakLoop()) {
-        VariableTable* tbl = (*it)->getVariableTable();
-        handleExpression(condition, tbl);
-      }
-    }
-  }
-
-  void LoopExtraction::handleLoopBlock(SgStatement* block, Loop* loop) {
-    std::vector<SgNode*> stmts = block->get_traversalSuccessorContainer();
-    for (SgNode* stmt : stmts) {
-      if (SgIfStmt *ifStmt = dynamic_cast<SgIfStmt*>(stmt)) {
-        handleIfStatement(ifStmt, loop);
-      } else if (SgForStatement* forStmt = dynamic_cast<SgForStatement*>(stmt)) {
-        handleForStatement(forStmt);
-      } else if (SgWhileStmt* whileStmt = dynamic_cast<SgWhileStmt*>(stmt)) {
-        handleWhileStatment(whileStmt);
-      }else if (SgSwitchStatement* switchStmt = dynamic_cast<SgSwitchStatement*>(stmt)) {
-        handleSwitchStatement(switchStmt, loop);
-      } else if (SgExprStatement *exprStmt = dynamic_cast<SgExprStatement*>(stmt)) {
-        handleExprStatement(exprStmt, loop);
-      } else if (SgBreakStmt* breakStmt = dynamic_cast<SgBreakStmt*>(stmt)) {
-        handleBreakStatement(breakStmt,loop);
-      } else if (SgReturnStmt *returnStmt = dynamic_cast<SgReturnStmt*>(stmt)) {
-        handleReturnStatement(returnStmt, loop);
-      } else {
-        std::stringstream ss;
-        ss << stmt->class_name() << " unsupported in loop block\n";
-        Message::warning(ss.str());
-      }
-    }
-  }
-
-  void LoopExtraction::handleExprStatement(SgExprStatement* exprStmt, Loop* loop) {
-    SgExpression* expr = exprStmt->get_expression();
+  void LoopExtraction::handleExpression(SgExpression* expr, Loop* loop) {
+    // collect variables involved in expression
     VariableCollector collector(loop);
     collector.traverse(expr, preorder);
 
@@ -169,6 +104,10 @@ namespace LE {
     }
   }
 
+  void LoopExtraction::handleVarDeclaration(SgVariableDeclaration* varDecl, Loop* loop) {
+
+  }
+
   void LoopExtraction::handleBreakStatement(SgBreakStmt* breakStmt, Loop* loop) {
     for (auto it = loop->begin(), ie = loop->end(); it != ie; ++it) {
       (*it)->setCanBreak(true);
@@ -176,18 +115,14 @@ namespace LE {
   }
 
   void LoopExtraction::handleReturnStatement(SgReturnStmt* returnStmt, Loop* loop) {
+    // record variable updates in return expression
+    SgExpression* expr = returnStmt->get_expression();
+    handleExpression(expr, loop);
+
     // if we encounter a return statement
     // that means all loop path can break the loop
-    SgExpression* expr = returnStmt->get_expression();
-    VariableCollector collector(loop);
-    collector.traverse(expr, preorder);
-
     for (auto it = loop->begin(), ie = loop->end(); it != ie; ++it) {
-      if (!(*it)->canBreakLoop()) {
-        VariableTable* tbl = (*it)->getVariableTable();
-        handleExpression(expr, tbl);
-        (*it)->setCanBreak(true);
-      }
+      (*it)->setCanBreak(true);
     }
   }
 
@@ -202,15 +137,15 @@ namespace LE {
     SgExprStatement* exprStmt = dynamic_cast<SgExprStatement*>(conditionStmt);
     assert(exprStmt != nullptr);
     SgExpression* condition = exprStmt->get_expression();
-    handleCondition(condition, loop);
+    handleExpression(condition, loop);
 
-    // clone origin paths and fork new ones with contradictory constraint
+    // fork origin paths and add contradictory constraint
     Loop* newLoop = loop->cloneWithoutBreak();
     for (auto it = newLoop->begin(), ie = newLoop->end(); it != ie; ++it) {
       (*it)->addConstraint(new SgNotOp(condition, condition->get_type()));
     }
 
-    // add constraint for origin loop
+    // add constraint to origin loop
     for (auto it = loop->begin(), ie = loop->end(); it != ie; ++it) {
       if (!(*it)->canBreakLoop()) {
         (*it)->addConstraint(condition);
@@ -219,32 +154,24 @@ namespace LE {
 
     // handle true body
     SgStatement* trueBody = ifStmt->get_true_body();
-    if (SgExprStatement* bodyExpr = dynamic_cast<SgExprStatement*>(trueBody)) {
-      handleExprStatement(bodyExpr, loop);
-    } else {
-      handleLoopBlock(trueBody, loop);
-    }
+    handleStatement(trueBody, loop);
+
 
     // handle false body
     SgStatement* falseBody = ifStmt->get_false_body();
     if (falseBody != nullptr) {
-      if (SgExprStatement* bodyExpr = dynamic_cast<SgExprStatement*>(trueBody)) {
-        handleExprStatement(bodyExpr, newLoop);
-      } else {
-        handleLoopBlock(falseBody, newLoop);
-      }
+      handleStatement(falseBody, newLoop);
     }
 
+    // merge information of false body into true body
     loop->merge(newLoop);
   }
 
   void LoopExtraction::handleWhileStatment(SgWhileStmt* whileStmt) {
-    std::cout << "while" << std::endl;
+
   }
 
   void LoopExtraction::handleForStatement(SgForStatement* forStmt) {
-    // collect variables involved in for_init_statement
-    // and store them in VariableTable
     VariableTable *varTbl = new VariableTable;
     SgStatement* testStmt = forStmt->get_test();
     SgExprStatement* exprStmt = dynamic_cast<SgExprStatement*>(testStmt);
@@ -254,7 +181,7 @@ namespace LE {
       condition = ASTHelper::clone(exprStmt->get_expression());
     }
 
-    // create path jumping in loop
+    // create path jumping into loop
     ConstraintList* inConstraint = new ConstraintList;
     if (condition != nullptr) {
       inConstraint->addConstraint(condition);
@@ -279,23 +206,58 @@ namespace LE {
 
     // collect variables involved in for_test_statement
     // and store them in VariableTable
-    handleCondition(condition, loop);
+    handleExpression(condition, varTbl);
 
     // handle loop body
     SgStatement* bodyStmt = forStmt->get_loop_body();
-    handleLoopBlock(bodyStmt, loop);
+    handleStatement(bodyStmt, loop);
 
-    // hanlde increment
+    // handle increment
     SgExpression* incExpr = forStmt->get_increment();
-    VariableCollector collector(loop);
-    collector.traverse(incExpr, preorder);
-    for (auto it = loop->begin(), ie = loop->end(); it != ie; ++it) {
-      if (!(*it)->canBreakLoop()) {
-        handleExpression(incExpr, (*it)->getVariableTable());
-      }
-    }
+    handleExpression(incExpr, loop);
 
+    // print result
     Printer::print(std::cout, loop);
+  }
+
+  void LoopExtraction::handleDoWhileStatement(SgDoWhileStmt* doStmt) {
+
+  }
+
+  void LoopExtraction::handleStatement(SgStatement* stmt, Loop* loop) {
+    if (SgBasicBlock* block = dynamic_cast<SgBasicBlock*>(stmt)) {
+      handleLoopBlock(block, loop);
+    } else if (SgForStatement* forStmt = dynamic_cast<SgForStatement*>(stmt)) {
+      handleForStatement(forStmt);
+    } else if (SgWhileStmt* whileStmt = dynamic_cast<SgWhileStmt*>(stmt)) {
+      handleWhileStatment(whileStmt);
+    } else if (SgDoWhileStmt* doStmt = dynamic_cast<SgDoWhileStmt*>(stmt)) {
+      handleDoWhileStatement(doStmt);
+    } else if (SgIfStmt *ifStmt = dynamic_cast<SgIfStmt*>(stmt)) {
+      handleIfStatement(ifStmt, loop);
+    } else if (SgSwitchStatement* switchStmt = dynamic_cast<SgSwitchStatement*>(stmt)) {
+      handleSwitchStatement(switchStmt, loop);
+    } else if (SgExprStatement *exprStmt = dynamic_cast<SgExprStatement*>(stmt)) {
+      SgExpression* expr = exprStmt->get_expression();
+      handleExpression(expr, loop);
+    } else if (SgVariableDeclaration *varDecl = dynamic_cast<SgVariableDeclaration*>(stmt)) {
+      handleVarDeclaration(varDecl, loop);
+    } else if (SgBreakStmt* breakStmt = dynamic_cast<SgBreakStmt*>(stmt)) {
+      handleBreakStatement(breakStmt,loop);
+    } else if (SgReturnStmt *returnStmt = dynamic_cast<SgReturnStmt*>(stmt)) {
+      handleReturnStatement(returnStmt, loop);
+    } else {
+      std::stringstream ss;
+      ss << stmt->class_name() << " unsupported in loop block\n";
+      Message::warning(ss.str());
+    }
+  }
+
+  void LoopExtraction::handleLoopBlock(SgBasicBlock* block, Loop* loop) {
+    SgStatementPtrList& stmts = block->get_statements();
+    for (SgStatement* stmt : stmts) {
+      handleStatement(stmt, loop);
+    }
   }
 
   void LoopExtraction::handleSgFunction(SgFunctionDeclaration* func) {
@@ -303,11 +265,13 @@ namespace LE {
     SgBasicBlock* funcBody = funcDef->get_body();
     SgStatementPtrList& stmtList = funcBody->get_statements();
 
-    for (auto it = stmtList.begin(), ie = stmtList.end(); it != ie; ++it) {
-      if (SgForStatement *forStmt = dynamic_cast<SgForStatement*>(*it)) {
+    for (SgStatement* stmt : stmtList) {
+      if (SgForStatement *forStmt = dynamic_cast<SgForStatement*>(stmt)) {
         handleForStatement(forStmt);
-      } else if (SgWhileStmt *whileStmt = dynamic_cast<SgWhileStmt*>(*it)) {
+      } else if (SgWhileStmt *whileStmt = dynamic_cast<SgWhileStmt*>(stmt)) {
         handleWhileStatment(whileStmt);
+      } else if (SgDoWhileStmt* doStmt = dynamic_cast<SgDoWhileStmt*>(stmt)) {
+        handleDoWhileStatement(doStmt);
       }
     }
   }
