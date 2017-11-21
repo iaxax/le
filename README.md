@@ -54,7 +54,7 @@ Loop body:
 * Modify build/Makefile
 	* set ROSE_INSTALL_DIR to root directory of rose 
 	* set BOOST_INSTALL_DIR to root directory of boost
-	* set LE_SOURCE_DIR to root directory of this project
+	* set LE_ROOT_DIR to root directory of this project
 	
 * Make
 ```bash

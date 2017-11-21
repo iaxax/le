@@ -20,11 +20,14 @@ BOOST_CPPFLAGS = -pthread -I $(BOOST_INSTALL_DIR)/include/boost
 # Location of library directory after "make install"
 ROSE_LIB_DIR = $(ROSE_INSTALL_DIR)/lib
 
+# Location of root of project
+LE_ROOT_DIR = /home/anson/Code/C++/le
+
 # Location of source code
-LE_SOURCE_DIR = /home/anson/Code/C++/le
+LE_SOURCE_DIR = $(LE_ROOT_DIR)/src
 
 # Location of Loop Extraction include directory
-LE_INCLUDE_DIR = $(LE_SOURCE_DIR)/include
+LE_INCLUDE_DIR = $(LE_ROOT_DIR)/include
 
 CXX         = g++
 CPPFLAGS    = -std=c++11 -g -Wall
