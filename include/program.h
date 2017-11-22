@@ -2,7 +2,6 @@
 #define LOOP_EXTRACTION_LOOP_H
 
 #include "rose.h"
-#include "loop.h"
 #include "constraint.h"
 #include <set>
 #include <map>
@@ -166,6 +165,22 @@ namespace LE {
     // merge paths in loop and delete loop
     // note: merged loop must have same name as that of merging loop
     void merge(Loop* loop);
+  };
+
+  // a function contains a name, a set of variables,
+  // a set of loops and a return value
+  class Function {
+
+  };
+
+  // a program corresbonds to a source file
+  // a program contains a name, a set of global variables
+  // and a set of functions
+  class Program {
+  private:
+    std::string name;
+    std::set<Variable*> globalVars;
+    std::set<Function*> globalFuncs;
   };
 
 }

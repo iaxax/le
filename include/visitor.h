@@ -2,7 +2,7 @@
 #define LOOP_EXTRACTION_VISITOR_H
 
 #include "rose.h"
-#include "loop.h"
+#include "program.h"
 #include <string>
 
 namespace LE {

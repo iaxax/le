@@ -6,8 +6,7 @@
 
 namespace LE {
 
-  // 4 spaces
-  const std::string Printer::indent = "    ";
+  Printer::~Printer() {}
 
   void Printer::printExpression(std::ostream& os, SgExpression* expr) {
     // if expr is a constant, print its value
@@ -67,7 +66,7 @@ namespace LE {
     }
   }
 
-  void Printer::printVariableUpdate(std::ostream& os, VariableTable* varTbl) {
+  void NormalPrinter::printVariableUpdate(std::ostream& os, VariableTable* varTbl) {
     os << indent << "path: {";
 
     // if there are no variables
@@ -93,7 +92,7 @@ namespace LE {
     }
   }
 
-  void Printer::printConstraint(std::ostream& os, ConstraintList* cl) {
+  void NormalPrinter::printConstraint(std::ostream& os, ConstraintList* cl) {
     os << indent << "constraint: ";
     auto it = cl->begin(), ie = cl->end();
     assert(it != ie);
@@ -108,7 +107,7 @@ namespace LE {
     }
   }
 
-  void Printer::printInnerLoops(std::ostream& os, const std::set<std::string>& loopNames) {
+  void NormalPrinter::printInnerLoops(std::ostream& os, const std::set<std::string>& loopNames) {
     os << indent << "inner loop: {";
     if (loopNames.empty()) {
       os << "}\n";
@@ -124,7 +123,7 @@ namespace LE {
     }
   }
 
-  void Printer::printPath(std::ostream& os, LoopPath* path) {
+  void NormalPrinter::printLoopPath(std::ostream& os, LoopPath* path) {
     printVariableUpdate(os, path->getVariableTable());
     printInnerLoops(os, path->getInnerLoops());
     printConstraint(os, path->getConstraintList());
@@ -133,7 +132,7 @@ namespace LE {
     os << (path->canBreakLoop() ? "true" : "false") << "\n";
   }
 
-  void Printer::printVarInvolved(std::ostream& os,
+  void NormalPrinter::printVarInvolved(std::ostream& os,
                                  const std::set<std::string>& variables) {
     os << "Loop variables: [";
 
@@ -154,7 +153,7 @@ namespace LE {
     }
   }
 
-  void Printer::print(std::ostream& os, Loop *loop) {
+  void NormalPrinter::printLoop(std::ostream& os, Loop *loop) {
     os << "==================================================\n";
     // print name
     os << "Loop name: " << loop->getName() << "\n";
@@ -166,7 +165,7 @@ namespace LE {
     // print body
     os << "Loop body:\n";
     for (auto it = loop->begin(), ie = loop->end(); it != ie; ++it) {
-      printPath(os, *it);
+      printLoopPath(os, *it);
       os << "\n";
     }
 
@@ -174,4 +173,27 @@ namespace LE {
     os.flush();
   }
 
+  void NormalPrinter::printFunction(std::ostream& os, Function* function) {
+
+  }
+
+  void NormalPrinter::printProgram(std::ostream& os, Program* program) {
+
+  }
+
+  void JsonPrinter::printLoopPath(std::ostream& os, LoopPath* LoopPath) {
+
+  }
+
+  void JsonPrinter::printLoop(std::ostream& os, Loop* loop) {
+
+  }
+
+  void JsonPrinter::printFunction(std::ostream& os, Function* function) {
+
+  }
+
+  void JsonPrinter::printProgram(std::ostream& os, Program* program) {
+
+  }
 }

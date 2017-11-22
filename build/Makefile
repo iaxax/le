@@ -39,7 +39,7 @@ executableFiles = le
 
 objectFiles = astHelper.o visitor.o \
 							loopNameAllocator.o loopExtraction.o \
-							loop.o printer.o main.o
+							program.o printer.o main.o
 
 # Default make rule to use
 all: $(executableFiles)
@@ -54,7 +54,7 @@ astHelper.o: $(LE_SOURCE_DIR)/astHelper.cpp \
 	$(LE_INCLUDE_DIR)/astHelper.h $(LE_INCLUDE_DIR)/message.h
 	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
 
-loop.o: $(LE_SOURCE_DIR)/loop.cpp $(LE_INCLUDE_DIR)/loop.h
+program.o: $(LE_SOURCE_DIR)/program.cpp $(LE_INCLUDE_DIR)/program.h
 	$(CXX) $(CPPFLAGS) -I$(ROSE_INCLUDE_DIR) -I$(LE_INCLUDE_DIR) -c $< -o $@
 
 loopExtraction.o: $(LE_SOURCE_DIR)/loopExtraction.cpp \

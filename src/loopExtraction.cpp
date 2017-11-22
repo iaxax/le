@@ -17,7 +17,8 @@ namespace LE {
 
   std::string LoopExtraction::getOperandName(SgExpression* expr) {
     std::ostringstream oss;
-    Printer::printExpression(oss, expr);
+    NormalPrinter printer;
+    printer.printExpression(oss, expr);
     return oss.str();
   }
 
@@ -233,7 +234,8 @@ namespace LE {
     handleStatement(bodyStmt, loop);
 
     // print result
-    Printer::print(std::cout, loop);
+    NormalPrinter printer;
+    printer.printLoop(std::cout, loop);
   }
 
   void LoopExtraction::handleForStatement(SgForStatement* forStmt, Loop* loop) {
@@ -282,7 +284,8 @@ namespace LE {
     handleExpression(incExpr, loop);
 
     // print result
-    Printer::print(std::cout, loop);
+    NormalPrinter printer;
+    printer.printLoop(std::cout, loop);
   }
 
   void LoopExtraction::handleDoWhileStatement(SgDoWhileStmt* doStmt, Loop* loop) {
@@ -327,7 +330,8 @@ namespace LE {
     loop->merge(newLoop);
 
     // print result
-    Printer::print(std::cout, loop);
+    NormalPrinter printer;
+    printer.printLoop(std::cout, loop);
   }
 
   void LoopExtraction::handleStatement(SgStatement* stmt, Loop* loop) {
