@@ -39,7 +39,7 @@ ROSE_LIBS = $(ROSE_LIB_DIR)/librose.la
 executableFiles = le
 
 objectFiles = astHelper.o visitor.o \
-              loopNameAllocator.o loopExtraction.o \
+              nameAllocator.o loopExtraction.o \
               program.o printer.o main.o
 
 # Default make rule to use
@@ -61,11 +61,11 @@ loopExtraction.o: $(LE_SOURCE_DIR)/loopExtraction.cpp \
 	$(LE_INCLUDE_DIR)/loopExtraction.h $(LE_INCLUDE_DIR)/message.h \
 	$(LE_INCLUDE_DIR)/constraint.h $(LE_INCLUDE_DIR)/printer.h \
 	$(LE_INCLUDE_DIR)/visitor.h $(LE_INCLUDE_DIR)/astHelper.h \
-	$(LE_INCLUDE_DIR)/loopNameAllocator.h
+	$(LE_INCLUDE_DIR)/nameAllocator.h
 	$(CXX) $(CPPFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
-loopNameAllocator.o: $(LE_SOURCE_DIR)/loopNameAllocator.cpp \
-	$(LE_INCLUDE_DIR)/loopNameAllocator.h
+nameAllocator.o: $(LE_SOURCE_DIR)/nameAllocator.cpp \
+	$(LE_INCLUDE_DIR)/nameAllocator.h
 	$(CXX) $(CPPFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 main.o: $(LE_SOURCE_DIR)/main.cpp

@@ -33,42 +33,70 @@ namespace LE {
   }
 
   // map from int to string form of operator
-  static std::map<VariantT, std::string> typeStrMap;
-  void initTypeStringMap() {
-    typeStrMap[V_SgEqualityOp] = "==";
-    typeStrMap[V_SgLessThanOp] = "<";
-    typeStrMap[V_SgGreaterThanOp] = ">";
-    typeStrMap[V_SgNotEqualOp] = "!=";
-    typeStrMap[V_SgLessOrEqualOp] = "<=";
-    typeStrMap[V_SgGreaterOrEqualOp] = ">=";
-    typeStrMap[V_SgAddOp] = "+";
-    typeStrMap[V_SgSubtractOp] = "-";
-    typeStrMap[V_SgMultiplyOp] = "*";
-    typeStrMap[V_SgDivideOp] = "/";
-    typeStrMap[V_SgIntegerDivideOp] = "/";
-    typeStrMap[V_SgModOp] = "%";
-    typeStrMap[V_SgAndOp] = "&&";
-    typeStrMap[V_SgOrOp] = "||";
-    typeStrMap[V_SgBitXorOp] = "^";
-    typeStrMap[V_SgBitAndOp] = "&";
-    typeStrMap[V_SgBitOrOp] = "|";
-    typeStrMap[V_SgCommaOpExp] = ",";
-    typeStrMap[V_SgLshiftOp] = "<<";
-    typeStrMap[V_SgRshiftOp] = ">>";
-    typeStrMap[V_SgNotOp] = "!";
-    typeStrMap[V_SgAssignOp] = "=";
-    typeStrMap[V_SgPointerDerefExp] = "*";
-    typeStrMap[V_SgAddressOfOp] = "&";
-    typeStrMap[V_SgPlusAssignOp] = "+=";
-    typeStrMap[V_SgMinusAssignOp] = "-=";
-    typeStrMap[V_SgAndAssignOp] = "&&=";
-    typeStrMap[V_SgIorAssignOp] = "||=";
-    typeStrMap[V_SgMultAssignOp] = "*=";
-    typeStrMap[V_SgDivAssignOp] = "/=";
-    typeStrMap[V_SgModAssignOp] = "%=";
-    typeStrMap[V_SgXorAssignOp] = "^=";
-    typeStrMap[V_SgLshiftAssignOp] = "<<=";
+  static std::map<VariantT, std::string> operatorStrMap;
+  void initOperatorStringMap() {
+    operatorStrMap[V_SgEqualityOp] = "==";
+    operatorStrMap[V_SgLessThanOp] = "<";
+    operatorStrMap[V_SgGreaterThanOp] = ">";
+    operatorStrMap[V_SgNotEqualOp] = "!=";
+    operatorStrMap[V_SgLessOrEqualOp] = "<=";
+    operatorStrMap[V_SgGreaterOrEqualOp] = ">=";
+    operatorStrMap[V_SgAddOp] = "+";
+    operatorStrMap[V_SgSubtractOp] = "-";
+    operatorStrMap[V_SgMultiplyOp] = "*";
+    operatorStrMap[V_SgDivideOp] = "/";
+    operatorStrMap[V_SgIntegerDivideOp] = "/";
+    operatorStrMap[V_SgModOp] = "%";
+    operatorStrMap[V_SgAndOp] = "&&";
+    operatorStrMap[V_SgOrOp] = "||";
+    operatorStrMap[V_SgBitXorOp] = "^";
+    operatorStrMap[V_SgBitAndOp] = "&";
+    operatorStrMap[V_SgBitOrOp] = "|";
+    operatorStrMap[V_SgCommaOpExp] = ",";
+    operatorStrMap[V_SgLshiftOp] = "<<";
+    operatorStrMap[V_SgRshiftOp] = ">>";
+    operatorStrMap[V_SgNotOp] = "!";
+    operatorStrMap[V_SgAssignOp] = "=";
+    operatorStrMap[V_SgPointerDerefExp] = "*";
+    operatorStrMap[V_SgAddressOfOp] = "&";
+    operatorStrMap[V_SgPlusAssignOp] = "+=";
+    operatorStrMap[V_SgMinusAssignOp] = "-=";
+    operatorStrMap[V_SgAndAssignOp] = "&&=";
+    operatorStrMap[V_SgIorAssignOp] = "||=";
+    operatorStrMap[V_SgMultAssignOp] = "*=";
+    operatorStrMap[V_SgDivAssignOp] = "/=";
+    operatorStrMap[V_SgModAssignOp] = "%=";
+    operatorStrMap[V_SgXorAssignOp] = "^=";
+    operatorStrMap[V_SgLshiftAssignOp] = "<<=";
   }
+
+  // map from int to string form of variable type
+  std::map<int, std::string> typeStrMap;
+  void initTypeStringMap() {
+    typeStrMap[T_CHAR] = "char";
+    typeStrMap[T_SIGNED_CHAR] = "singed char";
+    typeStrMap[T_UNSIGNED_CHAR] = "unsigned char";
+    typeStrMap[T_SHORT] = "short";
+    typeStrMap[T_SIGNED_SHORT] = "signed short";
+    typeStrMap[T_UNSIGNED_SHORT] = "unsigned short";
+    typeStrMap[T_INT] = "int";
+    typeStrMap[T_SIGNED_INT] = "signed int";
+    typeStrMap[T_UNSIGNED_INT] = "unsigned int";
+    typeStrMap[T_LONG] = "long";
+    typeStrMap[T_SIGNED_LONG] = "signed long";
+    typeStrMap[T_UNSIGNED_LONG] = "unsigned long";
+    typeStrMap[T_FLOAT] = "float";
+    typeStrMap[T_DOUBLE] = "double";
+    typeStrMap[T_LONG_LONG] = "long long";
+    typeStrMap[T_SIGNED_LONG_LONG] = "singed long long";
+    typeStrMap[T_UNSIGNED_LONG_LONG] = "unsigned long long";
+    typeStrMap[T_LONG_DOUBLE] = "long double";
+    typeStrMap[T_STRING] = "string";
+    typeStrMap[T_BOOL] = "bool";
+    typeStrMap[T_ARRAY] = "array";
+    typeStrMap[T_POINTER] = "pointer";
+  }
+
   //--------------ASTHelper member function-------------------------//
 
   // C++ is lack of static block as Java
@@ -77,6 +105,7 @@ namespace LE {
   public:
     Init() {
       initConstructorMap();
+      initOperatorStringMap();
       initTypeStringMap();
     }
   };
@@ -85,13 +114,19 @@ namespace LE {
   SgBinaryOp* ASTHelper::toBinaryOp(VariantT type, SgExpression* lhs,
     SgExpression* rhs, SgType* exprType) {
     auto iter = constructorMap.find(type);
-    assert(iter != constructorMap.end());
+    assert(iter != constructorMap.end() && "unsupported binary operator");
     return iter->second(lhs, rhs, exprType);
   }
 
   std::string ASTHelper::getOperatorString(VariantT type) {
+    auto iter = operatorStrMap.find(type);
+    assert(iter != operatorStrMap.end() && "unsupported binary operator");
+    return iter->second;
+  }
+
+  std::string ASTHelper::getTypeString(VariantT type) {
     auto iter = typeStrMap.find(type);
-    assert(iter != typeStrMap.end());
+    assert(iter != typeStrMap.end() && "unsupported variable type");
     return iter->second;
   }
 

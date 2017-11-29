@@ -15,7 +15,25 @@ namespace LE {
 
   public:
     // get a global unique name
-    static std::string allocLoopName();
+    static std::string allocName();
+  };
+
+  // allocate global unique name for path
+  class PathNameAllocator {
+  private:
+    static int id;
+
+  public:
+    static std::string allocName();
+  };
+
+  // allocte global unique name for block
+  class BlockNameAllocator {
+  private:
+    static int id;
+
+  public:
+    static std::string allocName();
   };
 }
 

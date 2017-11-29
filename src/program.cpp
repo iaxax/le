@@ -4,7 +4,8 @@
 namespace LE {
 
   Loop* Loop::cloneWithoutBreak() const {
-    Loop* newLoop = new Loop(name, parent);
+    //Loop* newLoop = new Loop(name, parent);
+    Loop* newLoop = new Loop(name);
     for (auto p : paths) {
       if (!p->canBreakLoop()) {
         newLoop->paths.insert(p->clone());
@@ -18,7 +19,7 @@ namespace LE {
 
   void Loop::merge(Loop* loop) {
     assert(name == loop->name);
-    assert(parent == loop->parent);
+    //assert(parent == loop->parent);
 
     paths.insert(loop->paths.begin(), loop->paths.end());
     variableInvolved.insert(loop->variableInvolved.begin(),

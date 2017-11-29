@@ -32,6 +32,10 @@ namespace LE {
     // map from int value of operator to string
     // e.g. VariantT::V_SgEqualityOp -> '=='
     static std::string getOperatorString(VariantT type);
+
+    // map from int value of type to string
+    // e.g. VariantT::V_INT -> "int"
+    static std::string getTypeString(VariantT type);
   };
 
 }

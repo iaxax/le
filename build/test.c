@@ -1,3 +1,6 @@
+int a = 1;
+double b, c = 1;
+
 
 int f() {
   // test for normal loop

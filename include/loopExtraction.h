@@ -35,7 +35,8 @@ namespace LE {
     void handleExpression(SgExpression* expr, Loop* loop);
 
     // record variable updates in declaration
-    void handleVarDeclaration(SgVariableDeclaration* varDecl, Loop* loop);
+    void handleVarDeclaration(SgVariableDeclaration* varDecl,
+                              VariableTable* varTbl);
 
     // mark current paths canBreak = true
     void handleBreakStatement(SgBreakStmt* breakStmt, Loop* loop);
@@ -70,10 +71,10 @@ namespace LE {
     void handleLoopBlock(SgBasicBlock* block, Loop* loop);
 
     // extract loops from a function
-    void handleSgFunction(SgFunctionDeclaration* func);
+    void handleSgFunction(SgFunctionDeclaration* funcDecl, Function* func);
 
     // extract loops from a list of global functions
-    void handleSgGlobal(SgGlobal* global);
+    void handleSgGlobal(SgGlobal* global, Program* program);
 
     // extract loops from a source file
     void handleSgSourceFile(SgSourceFile* src);

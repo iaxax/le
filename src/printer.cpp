@@ -3,10 +3,17 @@
 #include "message.h"
 #include <cassert>
 #include <set>
+#include <sstream>
 
 namespace LE {
 
-  Printer::~Printer() {}
+  std::string Printer::getIndent(int level) {
+    std::stringstream ss;
+    for (int i = 0; i < level; ++i) {
+      ss << indent;
+    }
+    return ss.str();
+  }
 
   void Printer::printExpression(std::ostream& os, SgExpression* expr) {
     // if expr is a constant, print its value
@@ -123,7 +130,7 @@ namespace LE {
     }
   }
 
-  void NormalPrinter::printLoopPath(std::ostream& os, LoopPath* path) {
+  void NormalPrinter::printLoopPath(std::ostream& os, LoopPath* path, int indentLv) {
     printVariableUpdate(os, path->getVariableTable());
     printInnerLoops(os, path->getInnerLoops());
     printConstraint(os, path->getConstraintList());
@@ -153,7 +160,7 @@ namespace LE {
     }
   }
 
-  void NormalPrinter::printLoop(std::ostream& os, Loop *loop) {
+  void NormalPrinter::printLoop(std::ostream& os, Loop *loop, int indentLv) {
     os << "==================================================\n";
     // print name
     os << "Loop name: " << loop->getName() << "\n";
@@ -173,27 +180,128 @@ namespace LE {
     os.flush();
   }
 
-  void NormalPrinter::printFunction(std::ostream& os, Function* function) {
+  void NormalPrinter::printFunction(std::ostream& os, Function* function, int indentLv) {
 
   }
 
-  void NormalPrinter::printProgram(std::ostream& os, Program* program) {
+  void NormalPrinter::printProgram(std::ostream& os, Program* program, int indentLv) {
 
   }
 
-  void JsonPrinter::printLoopPath(std::ostream& os, LoopPath* LoopPath) {
+  void JsonPrinter::printVarDecl(std::ostream& os, VariableTable* varTbl, int indentLv) {
+    std::string&& indent = getIndent(indentLv);
+    os << indent << "'variables': {";
+    auto it = varTbl->begin(), ie = varTbl->end();
+    if (it == ie) {
+      os << "}";
+    } else {
+      while (it != ie) {
+        Variable* var = (it++)->second;
+        std::string&& type = ASTHelper::getTypeString(var->getType());
+        os << " '" << var->getName() << "': '" << type << "'";
+        os << (it == ie ? " }" : ",");
+      }
+    }
+  }
+
+  void JsonPrinter::printVarInit(std::ostream& os, VariableTable* varTbl, int indentLv) {
+    std::string&& indent = getIndent(indentLv);
+    os << indent << "'initialize': {";
+    auto it = varTbl->begin(), ie = varTbl->end();
+    if (it == ie) {
+      os << "}";
+    } else {
+      while (it != ie) {
+        Variable* var = (it++)->second;
+        std::string&& name = var->getName();
+        SgExpression* initValue = var->getInitValue();
+        std::string value;
+        if (initValue == nullptr) {
+          value = "[NULL]";
+        } else {
+          std::ostringstream oss;
+          printExpression(oss, initValue);
+          value = oss.str();
+        }
+
+        os << " '" << name << "': '" << value << "'";
+        os << (it == ie ? " }" : ",");
+      }
+    }
+  }
+
+  void JsonPrinter::printFuncParam(std::ostream& os,
+                                  const std::set<std::string>& params,
+                                  int indentLv) {
+    std::string&& indent = getIndent(indentLv);
+    os << indent << "'input_variables': [";
+    auto it = params.begin(), ie = params.end();
+    if (it == ie) {
+      os << "]";
+    } else {
+      while (it != ie) {
+        const std::string& name = *(it++);
+        os << " '" << name << "'";
+        os << (it == ie ? " ]" : ",");
+      }
+    }
+  }
+
+  void JsonPrinter::printLoopPath(std::ostream& os, LoopPath* LoopPath, int indentLv) {
 
   }
 
-  void JsonPrinter::printLoop(std::ostream& os, Loop* loop) {
+  void JsonPrinter::printLoop(std::ostream& os, Loop* loop, int indentLv) {
 
   }
 
-  void JsonPrinter::printFunction(std::ostream& os, Function* function) {
+  void JsonPrinter::printFunction(std::ostream& os, Function* function, int indentLv) {
+    std::string&& indent = getIndent(indentLv);
+    os << indent << "'" << function->getName() << "': {\n";
 
+    printVarDecl(os, function->getVariableTable(), indentLv + 1);
+    os << ",\n";
+
+    printFuncParam(os, function->getParams(), indentLv + 1);
+    os << ",\n";
+
+    os << indent << "}";
   }
 
-  void JsonPrinter::printProgram(std::ostream& os, Program* program) {
+  void JsonPrinter::printProgramName(std::ostream& os, const std::string& name, int indentLv) {
+    std::string&& indent = getIndent(indentLv);
+    os << indent << "'program_name': '" << name << "'\n";
+  }
 
+  void JsonPrinter::printProgram(std::ostream& os, Program* program, int indentLv) {
+    std::string&& indent = getIndent(indentLv);
+
+    os << indent << "{\n";
+
+    printProgramName(os, program->getName(), indentLv + 1);
+    os << ",\n";
+
+    printVarDecl(os, program->getVariableTable(), indentLv + 1);
+    os << ",\n";
+    printVarInit(os, program->getVariableTable(), indentLv + 1);
+    os << ",\n";
+
+    std::string&& deeperIndent = getIndent(indentLv + 1);
+    os << deeperIndent << "'functions': {";
+    const std::set<Function*> funcs = program->getFunctions();
+    auto it = funcs.begin(), ie = funcs.end();
+    if (it == ie) {
+      os << " }\n";
+    } else {
+      os << '\n';
+      while (it != ie) {
+        Function* func = *(it++);
+        printFunction(os, func, indentLv + 2);
+        os << (it == ie ? "\n" : ",\n");
+      }
+      os << deeperIndent << "}\n";
+    }
+
+    os << indent << "}\n";
   }
 }

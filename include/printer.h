@@ -10,12 +10,19 @@ namespace LE {
 
   class Printer {
   public:
-    virtual void printProgram(std::ostream& os, Program* program) = 0;
-    virtual void printFunction(std::ostream& os, Function* function) = 0;
-    virtual void printLoop(std::ostream& os, Loop* loop) = 0;
-    virtual void printLoopPath(std::ostream& os, LoopPath* loopPath) = 0;
+    virtual void printProgram(std::ostream& os, Program* program, int indentLv = 0) = 0;
+    virtual void printFunction(std::ostream& os, Function* function, int indentLv = 0) = 0;
+    virtual void printLoop(std::ostream& os, Loop* loop, int indentLv = 0) = 0;
+    virtual void printLoopPath(std::ostream& os, LoopPath* loopPath, int indentLv = 0) = 0;
     virtual void printExpression(std::ostream& os, SgExpression* expr);
-    virtual ~Printer() = 0;
+
+    Printer(): indent("    ") {}
+    virtual ~Printer() {};
+
+  protected:
+    std::string indent;
+
+    std::string getIndent(int level);
   };
 
   // print result of loop extraction
@@ -40,22 +47,28 @@ namespace LE {
     void printInnerLoops(std::ostream& os, const std::set<std::string>& loopNames);
 
   public:
-    virtual void printProgram(std::ostream& os, Program* program);
-    virtual void printFunction(std::ostream& os, Function* function);
-    virtual void printLoop(std::ostream& os, Loop* loop);
-    virtual void printLoopPath(std::ostream& os, LoopPath* loopPath);
+    virtual void printProgram(std::ostream& os, Program* program, int indentLv = 0);
+    virtual void printFunction(std::ostream& os, Function* function, int indentLv = 0);
+    virtual void printLoop(std::ostream& os, Loop* loop, int indentLv = 0);
+    virtual void printLoopPath(std::ostream& os, LoopPath* loopPath, int indentLv = 0);
 
-    NormalPrinter(): indent("    ") {}
+    NormalPrinter() {}
     NormalPrinter(const std::string& indent): indent(indent) {}
     virtual ~NormalPrinter() {}
   };
 
   class JsonPrinter: public Printer {
+  private:
+    void printVarDecl(std::ostream& os, VariableTable* varTbl, int indentLv);
+    void printVarInit(std::ostream& os, VariableTable* varTbl, int indentLv);
+    void printFuncParam(std::ostream& os, const std::set<std::string>& params, int indentLv);
+    void printProgramName(std::ostream& os, const std::string& name, int indentLv);
+
   public:
-    virtual void printProgram(std::ostream& os, Program* program);
-    virtual void printFunction(std::ostream& os, Function* function);
-    virtual void printLoop(std::ostream& os, Loop* loop);
-    virtual void printLoopPath(std::ostream& os, LoopPath* loopPath);
+    virtual void printProgram(std::ostream& os, Program* program, int indentLv = 0);
+    virtual void printFunction(std::ostream& os, Function* function, int indentLv = 0);
+    virtual void printLoop(std::ostream& os, Loop* loop, int indentLv = 0);
+    virtual void printLoopPath(std::ostream& os, LoopPath* loopPath, int indentLv = 0);
 
     virtual ~JsonPrinter() {}
   };
