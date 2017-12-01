@@ -1,6 +1,5 @@
 #include "loopExtraction.h"
 #include "printer.h"
-#include "visitor.h"
 #include "astHelper.h"
 #include "message.h"
 #include "constraint.h"

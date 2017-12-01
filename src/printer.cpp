@@ -409,6 +409,9 @@ namespace LE {
     printVarDecl(os, func->getVariableTable(), indentLv + 1);
     os << ",\n";
 
+    printVarInit(os, func->getVariableTable(), indentLv + 1);
+    os << ",\n";
+
     printFuncParam(os, func->getParams(), indentLv + 1);
     os << ",\n";
 
