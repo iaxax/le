@@ -34,3 +34,5 @@
 *.dot
 le
 ast/
+
+build/Makefile

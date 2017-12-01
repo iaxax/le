@@ -14,6 +14,7 @@ namespace LE {
     // T must be SgNode or subclass of SgNode
     template<class T>
     static T* clone(T* node) {
+      if (node == nullptr) return node;
       SgTreeCopy deepCopy;
       return dynamic_cast<T*>(deepCopy.copyAst(dynamic_cast<SgNode*>(node)));
     }

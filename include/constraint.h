@@ -19,16 +19,14 @@ namespace LE {
 
   public:
     // add a constraint
-    inline void addConstraint(SgExpression* expr) {
-      constraints.push_back(expr);
-    }
+    void addConstraint(SgExpression* expr) { constraints.push_back(expr); }
 
     ConstraintList() {}
     ConstraintList(const std::vector<SgExpression*>& c): constraints(c) {}
 
     // clone of a ConstraintList
     // note: elements(SgExpression*) in constraints are copied shallowly
-    inline ConstraintList* clone() const {return new ConstraintList(constraints);}
+    ConstraintList* clone() const { return new ConstraintList(constraints); }
 
     typedef std::vector<SgExpression*>::iterator iterator;
     typedef std::vector<SgExpression*>::const_iterator const_iterator;

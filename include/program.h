@@ -92,21 +92,14 @@ namespace LE {
     inline void setCanBreak(bool b) { canBreak = b; }
     inline ConstraintList* getConstraintList() { return constraintList; }
     inline void addInnerLoop(const std::string& loop) { innerLoops.insert(loop); }
-
-    inline const std::set<std::string>& getInnerLoops() const {
-      return innerLoops;
-    }
-
-    inline void addConstraint(SgExpression* c) {
-      constraintList->addConstraint(c);
-    }
+    inline const std::set<std::string>& getInnerLoops() const { return innerLoops; }
+    inline void addConstraint(SgExpression* c) { constraintList->addConstraint(c); }
 
     // a deep clone of path
     LoopPath* clone() const {
       // return new LoopPath(varTbl->clone(),
       //   constraintList->clone(), parent, canBreak);
-      return new LoopPath(varTbl->clone(),
-        constraintList->clone(), canBreak);
+      return new LoopPath(varTbl->clone(), constraintList->clone(), canBreak);
     }
   };
 
@@ -114,15 +107,12 @@ namespace LE {
   // and a set of paths
   class Loop {
   private:
-    // a loop may be inner loop of another loop
-    // the most outside loop has no parent(nullptr)
-    //Loop* parent;
 
     // name of loop (global unique)
     std::string name;
 
-    // variables involved in the loop
-    std::set<std::string> variableInvolved;
+    // variables declared in the loop
+    VariableTable* varTbl;
 
     // set of inner loops
     std::set<Loop*> innerLoops;
@@ -131,25 +121,13 @@ namespace LE {
     std::set<LoopPath*> paths;
 
   public:
-    //Loop(const std::string& n, Loop* p): parent(p), name(n) {}
-    Loop(const std::string& n): name(n) {}
+    Loop(const std::string& n, VariableTable* vt): name(n), varTbl(vt) {}
     inline void addPath(LoopPath* p) {paths.insert(p);}
-    inline void addVariable(std::string n) { variableInvolved.insert(n); }
-    inline bool containVariable(const std::string &name) {
-      return variableInvolved.find(name) != variableInvolved.end();
-    }
-
     inline std::string getName() {return name;}
-    //inline Loop* getParent() { return parent; }
+    inline VariableTable* getVariableTable() { return varTbl; }
     void addInnerLoop(Loop* loop);
-
-    inline const std::set<Loop*>& getInnerLoops() const {
-      return innerLoops;
-    }
-
-    inline const std::set<std::string>& getAllVariables() const {
-      return variableInvolved;
-    }
+    inline const std::set<Loop*>& getInnerLoops() const { return innerLoops; }
+    inline std::set<LoopPath*> getPaths() { return paths; }
 
     typedef std::set<LoopPath*>::iterator iterator;
     typedef std::set<LoopPath*>::const_iterator const_iterator;
@@ -172,19 +150,46 @@ namespace LE {
   // a blocks contains update of a set of variables
   class Block {
   private:
+    std::string name;
     VariableTable* varTbl;
+
+  public:
+    Block(const std::string& n, VariableTable* vt): name(n), varTbl(vt) {}
+
+    inline VariableTable* getVariableTable() { return varTbl; }
+    inline std::string getName() { return name; }
   };
 
-  // a path contains a list of constraints
-  // and a list of basic blocks
+  // a path contains a list of constraints,
+  // a list of basic blocks, a name and a return value
   class Path {
   private:
     std::string name;
     ConstraintList* constraintList;
     std::vector<std::string> paths;
+    SgExpression* retVal;
+    bool isReturn;
 
   public:
-    Path(const std::string& n): name(n) {}
+    Path(const std::string& n, ConstraintList* cl, SgExpression* rv = nullptr):
+      name(n), constraintList(cl), retVal(rv), isReturn(false) {}
+
+    Path(const std::string& n, ConstraintList* cl,
+        const std::vector<std::string>& p, SgExpression* rv, bool ret):
+          name(n), constraintList(cl), paths(p), retVal(rv), isReturn(ret) {}
+
+    inline std::string getName() { return name; }
+    inline SgExpression* getReturnValue() { return retVal; }
+    inline void setReturnValue(SgExpression* rv) { retVal = rv; }
+    inline bool isPathReturn() { return isReturn; }
+    inline void setPathReturn(bool b) { isReturn = b; }
+    inline void addPath(const std::string& p) { paths.push_back(p); }
+    inline std::vector<std::string> getPaths() { return paths; }
+    inline void addConstraint(SgExpression* e) { constraintList->addConstraint(e); }
+    inline ConstraintList* getConstraints() { return constraintList; }
+
+
+    Path* clone();
   };
 
   // a function contains a name, a set of parameters,
@@ -192,9 +197,6 @@ namespace LE {
   //
   // note: loops here describes detail infomration of loops in paths
   //       blocks here describes details information of blocks in paths
-  //       retVal here only describes return value in master branch
-  //       for code like if (a) return 1; else return 2;
-  //       retVal = nullptr
   class Function {
   private:
     std::string name;
@@ -203,7 +205,6 @@ namespace LE {
     std::set<Path*> paths;
     std::set<Loop*> loops;
     std::set<Block*> blocks;
-    SgExpression* retVal;
 
   public:
     Function(VariableTable* vt): varTbl(vt) {}
@@ -215,6 +216,16 @@ namespace LE {
     inline VariableTable* getVariableTable() { return varTbl; }
     inline std::set<std::string> getParams() { return parameters; }
     inline void addPath(Path* p) { paths.insert(p); }
+    inline std::set<Path*> getPaths() { return paths; }
+    inline void addLoop(Loop* l) { loops.insert(l); }
+    inline void addBlock(Block* b) { blocks.insert(b); }
+    inline std::set<Block*> getBlocks() { return blocks; }
+    inline std::set<Loop*> getLoops() { return loops; }
+
+    // clone a function with the same paths as origin function except
+    // paths that have been returned
+    Function* cloneNotReturnPaths();
+    void merge(Function* func);
   };
 
   // a program corresbonds to a source file

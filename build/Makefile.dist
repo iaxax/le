@@ -6,13 +6,13 @@
 
 
 # Location of rose installation
-ROSE_INSTALL_DIR = /home/iaxax/project/opensource/rose
+ROSE_INSTALL_DIR = home_to_your_rose_installation
 
 # Location of include directory after "make install"
 ROSE_INCLUDE_DIR = $(ROSE_INSTALL_DIR)/include/rose
 
 # Location of boost installation
-BOOST_INSTALL_DIR = /home/iaxax/project/opensource/boost/1_61_0
+BOOST_INSTALL_DIR = home_to_your_boost_installation
 
 # Location of Boost include directory
 BOOST_INCLUDE_DIR = $(BOOST_INSTALL_DIR)/include
@@ -21,7 +21,7 @@ BOOST_INCLUDE_DIR = $(BOOST_INSTALL_DIR)/include
 ROSE_LIB_DIR = $(ROSE_INSTALL_DIR)/lib
 
 # Location of root of project
-LE_ROOT_DIR = /home/iaxax/code/cpp/le
+LE_ROOT_DIR = home_to_this_project
 
 # Location of source code
 LE_SOURCE_DIR = $(LE_ROOT_DIR)/src
@@ -54,7 +54,9 @@ astHelper.o: $(LE_SOURCE_DIR)/astHelper.cpp \
 	$(LE_INCLUDE_DIR)/astHelper.h $(LE_INCLUDE_DIR)/message.h
 	$(CXX) $(CPPFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
-program.o: $(LE_SOURCE_DIR)/program.cpp $(LE_INCLUDE_DIR)/program.h
+program.o: $(LE_SOURCE_DIR)/program.cpp $(LE_INCLUDE_DIR)/program.h \
+	         $(LE_INCLUDE_DIR)/nameAllocator.h $(LE_INCLUDE_DIR)/constraint.h \
+					 $(LE_INCLUDE_DIR)/astHelper.h
 	$(CXX) $(CPPFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 loopExtraction.o: $(LE_SOURCE_DIR)/loopExtraction.cpp \

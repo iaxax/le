@@ -1,11 +1,12 @@
 #include "program.h"
+#include "nameAllocator.h"
+#include "astHelper.h"
 #include <cassert>
 
 namespace LE {
 
   Loop* Loop::cloneWithoutBreak() const {
-    //Loop* newLoop = new Loop(name, parent);
-    Loop* newLoop = new Loop(name);
+    Loop* newLoop = new Loop(name, varTbl);
     for (auto p : paths) {
       if (!p->canBreakLoop()) {
         newLoop->paths.insert(p->clone());
@@ -19,11 +20,8 @@ namespace LE {
 
   void Loop::merge(Loop* loop) {
     assert(name == loop->name);
-    //assert(parent == loop->parent);
 
     paths.insert(loop->paths.begin(), loop->paths.end());
-    variableInvolved.insert(loop->variableInvolved.begin(),
-      loop->variableInvolved.end());
     innerLoops.insert(loop->innerLoops.begin(),
       loop->innerLoops.end());
 
@@ -50,4 +48,36 @@ namespace LE {
     result->table.insert(table.begin(), table.end());
     return result;
   }
+
+  Path* Path::clone() {
+    ConstraintList* cl = constraintList->clone();
+    std::string&& pathName = PathNameAllocator::allocName();
+    SgExpression* rv = ASTHelper::clone(retVal);
+    return new Path(pathName, cl, paths, rv, isReturn);
+  }
+
+  Function* Function::cloneNotReturnPaths() {
+    Function* newFunc = new Function(varTbl);
+    for (Path* p : paths) {
+      if (!p->isPathReturn()) {
+        newFunc->addPath(p->clone());
+      }
+    }
+    return newFunc;
+  }
+
+  void Function::merge(Function* func) {
+    for (Path* p : func->getPaths()) {
+      paths.insert(p);
+    }
+    for (Block* b : func->getBlocks()) {
+      blocks.insert(b);
+    }
+    for (Loop* l : func->getLoops()) {
+      loops.insert(l);
+    }
+
+    delete func;
+  }
+
 }

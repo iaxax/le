@@ -14,14 +14,14 @@ namespace LE {
   }
 
   std::string LoopNameAllocator::allocName() {
-    return LE::allocName("loop", id);
+    return LE::allocName("loop", LoopNameAllocator::id);
   }
 
   std::string PathNameAllocator::allocName() {
-    return LE::allocName("path", id);
+    return LE::allocName("path", PathNameAllocator::id);
   }
 
   std::string BlockNameAllocator::allocName() {
-    return LE::allocName("block", id);
+    return LE::allocName("block", BlockNameAllocator::id);
   }
 }

@@ -20,6 +20,13 @@ namespace LE {
     // e.g 'var', 'arr[i]', '*p'
     std::string getOperandName(SgExpression* expr);
 
+    // add loop to paths and function and return the loop
+    Loop* saveLoopInFunction(Function* func);
+
+    // for, while, do-while, if, and switch-case are atom statements
+    // others are not
+    bool isAtomStatement(SgStatement* stmt);
+
     // if we can't find a variable in current variable table
     // it may locate in variable table of a outer loop
     // so we search along this link and find the nearest variable table
@@ -32,18 +39,18 @@ namespace LE {
     void handleExpression(SgExpression* expr, VariableTable* varTbl);
 
     // record variable updates in expression
-    void handleExpression(SgExpression* expr, Loop* loop);
+    void handleExprInLoop(SgExpression* expr, Loop* loop);
 
     // record variable updates in declaration
     void handleVarDeclaration(SgVariableDeclaration* varDecl,
                               VariableTable* varTbl);
 
     // mark current paths canBreak = true
-    void handleBreakStatement(SgBreakStmt* breakStmt, Loop* loop);
+    void handleBreakInLoop(SgBreakStmt* breakStmt, Loop* loop);
 
     // mark current paths canBreak = true
     // record variable updates in returned expression
-    void handleReturnStatement(SgReturnStmt* returnStmt, Loop* loop);
+    void handleReturnInLoop(SgReturnStmt* returnStmt, Loop* loop);
 
     // forks loop paths
     // record variable updates in each case
@@ -52,7 +59,10 @@ namespace LE {
     // forks loop paths
     // record variable updates in condition, true body and false body
     // e.g. if (a = 3)
-    void handleIfStatement(SgIfStmt* ifStmt, Loop* loop);
+    void handeIfInLoop(SgIfStmt* ifStmt, Loop* loop);
+
+    // record paths in if-statement
+    void handleIfInFunction(SgIfStmt* ifStmt, Function* func);
 
     // extract a loop from a while statement
     void handleWhileStatment(SgWhileStmt* whileStmt, Loop* loop);
@@ -63,29 +73,36 @@ namespace LE {
     // extract a loop from a do-while statement
     void handleDoWhileStatement(SgDoWhileStmt* doStmt, Loop* loop);
 
-    // handle a general statement
+    // handle a general statement in a loop
     // it delegates jobs to other concrete statements
-    void handleStatement(SgStatement* stmt, Loop* loop);
+    void handleStmtInLoop(SgStatement* stmt, Loop* loop);
+
+    // handle a general statement in a function
+    // it delegates jobs to other concrete statements
+    void handleStmtInFunction(SgStatement* stmt, Function* func);
 
     // traverse statements in a block of a loop
-    void handleLoopBlock(SgBasicBlock* block, Loop* loop);
+    void handleBlockInLoop(SgStatementPtrList& stmts, Loop* loop);
 
-    // extract loops from a function
+    // traverse statements in a block of a path
+    void handleBlockInFunction(SgStatementPtrList& stmts, Function* func);
+
+    // extract paths from a function
     void handleSgFunction(SgFunctionDeclaration* funcDecl, Function* func);
 
-    // extract loops from a list of global functions
+    // extract paths from a list of global functions
     void handleSgGlobal(SgGlobal* global, Program* program);
 
-    // extract loops from a source file
+    // extract paths from a source file
     void handleSgSourceFile(SgSourceFile* src);
 
-    // extract loops from a list of files
+    // extract paths from a list of files
     void handleSgFileList(SgFileList* fileList);
 
   public:
     LoopExtraction (int argc, char* argv[]);
 
-    // extract loops from a project
+    // extract paths from a project
     void handleSgProject();
   };
 
