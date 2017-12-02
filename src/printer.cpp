@@ -120,11 +120,10 @@ namespace LE {
       os << "true'";
     }
     else {
-      os << ' ';
       while (it != ie) {
         SgExpression* constraint = *(it++);
         printExpression(os, constraint);
-        os << (it == ie ? " '" : " && ");
+        os << (it == ie ? "'" : " && ");
       }
     }
   }
