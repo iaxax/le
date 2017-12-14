@@ -203,6 +203,8 @@ Loop body:
 
 **Build**
 
+* Following steps are verified in my pc(Ubuntu 16.04 LTS)
+
 * Install Rose, please refer to [here](http://rosecompiler.org/ROSE_HTML_Reference/installation.html) (That takes really a long time for me, so just be patient)
 
 * Modify build/Makefile
@@ -214,6 +216,15 @@ vim Makefile
 # set ROSE_INSTALL_DIR to root directory of rose 
 # set BOOST_INSTALL_DIR to root directory of boost
 # set LE_ROOT_DIR to root directory of this project
+
+# add boost to path of dynamic link library
+vim  /etc/ld.so.conf.d/boost.conf 
+# write root direcotry of boost
+# e.g. /usr/lib
+# you can refer to other *.conf in this directory
+
+sudo ldconfig
+
 ```
 	
 * Make
